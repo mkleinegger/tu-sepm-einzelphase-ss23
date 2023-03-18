@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -69,6 +70,7 @@ public class HorseEndpoint {
   }
 
   @PostMapping
+  @ResponseStatus(code = HttpStatus.CREATED, reason = "CREATED")
   public HorseDetailDto create(@RequestBody HorseCreateDto toCreate) throws ValidationException, ConflictException {
     LOG.info("POST " + BASE_PATH);
     LOG.debug("Body of request:\n{}", toCreate);
