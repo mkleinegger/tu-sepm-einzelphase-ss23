@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.text.DecimalFormat;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -24,7 +26,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class LogFilter extends OncePerRequestFilter {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final  DecimalFormat REQUEST_RUNTIME_FORMAT = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+  private static final DecimalFormat REQUEST_RUNTIME_FORMAT = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
   private static final Long NANOSECONDS_PER_MS = 1000_000L;
   private static final List<String> MUTED_PATHS = Arrays.asList(
       "/swagger-ui/",

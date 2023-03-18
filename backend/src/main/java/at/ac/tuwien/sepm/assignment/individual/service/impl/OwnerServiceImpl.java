@@ -8,12 +8,14 @@ import at.ac.tuwien.sepm.assignment.individual.exception.ValidationException;
 import at.ac.tuwien.sepm.assignment.individual.mapper.OwnerMapper;
 import at.ac.tuwien.sepm.assignment.individual.persistence.OwnerDao;
 import at.ac.tuwien.sepm.assignment.individual.service.OwnerService;
+
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,9 +27,7 @@ public class OwnerServiceImpl implements OwnerService {
   private final OwnerDao dao;
   private final OwnerMapper mapper;
 
-  public OwnerServiceImpl(
-      OwnerDao dao,
-      OwnerMapper mapper) {
+  public OwnerServiceImpl(OwnerDao dao, OwnerMapper mapper) {
     this.dao = dao;
     this.mapper = mapper;
   }
@@ -41,10 +41,7 @@ public class OwnerServiceImpl implements OwnerService {
   @Override
   public Map<Long, OwnerDto> getAllById(Collection<Long> ids) throws NotFoundException {
     LOG.trace("getAllById({})", ids);
-    Map<Long, OwnerDto> owners =
-        dao.getAllById(ids).stream()
-            .map(mapper::entityToDto)
-            .collect(Collectors.toUnmodifiableMap(OwnerDto::id, Function.identity()));
+    Map<Long, OwnerDto> owners = dao.getAllById(ids).stream().map(mapper::entityToDto).collect(Collectors.toUnmodifiableMap(OwnerDto::id, Function.identity()));
     for (final var id : ids) {
       if (!owners.containsKey(id)) {
         throw new NotFoundException("Owner with ID %d not found".formatted(id));
@@ -56,8 +53,7 @@ public class OwnerServiceImpl implements OwnerService {
   @Override
   public Stream<OwnerDto> search(OwnerSearchDto searchParameters) {
     LOG.trace("search({})", searchParameters);
-    return dao.search(searchParameters).stream()
-        .map(mapper::entityToDto);
+    return dao.search(searchParameters).stream().map(mapper::entityToDto);
   }
 
   @Override

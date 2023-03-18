@@ -6,10 +6,13 @@ import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepm.assignment.individual.persistence.HorseDao;
 import at.ac.tuwien.sepm.assignment.individual.type.Sex;
+
 import java.lang.invoke.MethodHandles;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,6 +25,7 @@ public class HorseJdbcDao implements HorseDao {
   private static final String TABLE_NAME = "horse";
   private static final String SQL_SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
   private static final String SQL_SELECT_BY_ID = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
+  private static final String SQL_CREATE = "INSERT INTO " + TABLE_NAME + " (name, description, date_of_birth, sex, owner_id) VALUES (?, ?, ?, ?, ?)";
   private static final String SQL_UPDATE = "UPDATE " + TABLE_NAME
       + " SET name = ?"
       + "  , description = ?"
@@ -32,8 +36,7 @@ public class HorseJdbcDao implements HorseDao {
 
   private final JdbcTemplate jdbcTemplate;
 
-  public HorseJdbcDao(
-      JdbcTemplate jdbcTemplate) {
+  public HorseJdbcDao(JdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
   }
 
@@ -60,7 +63,6 @@ public class HorseJdbcDao implements HorseDao {
     return horses.get(0);
   }
 
-
   @Override
   public Horse update(HorseDetailDto horse) throws NotFoundException {
     LOG.trace("update({})", horse);
@@ -85,6 +87,39 @@ public class HorseJdbcDao implements HorseDao {
         ;
   }
 
+  @Override
+  public Horse create(HorseCreateDto newHorse) {
+    LOG.trace("create({})", newHorse);
+
+    var ownerId = newHorse.owner() != null ? String.valueOf(newHorse.owner().id()) : null;
+
+    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+    jdbcTemplate.update(con -> {
+      PreparedStatement stmt = con.prepareStatement(SQL_CREATE, Statement.RETURN_GENERATED_KEYS);
+      stmt.setString(1, newHorse.name());
+      stmt.setString(2, newHorse.description());
+      stmt.setString(3, String.valueOf(newHorse.dateOfBirth()));
+      stmt.setString(4, newHorse.sex().toString());
+      stmt.setString(5, ownerId);
+
+      return stmt;
+    }, keyHolder);
+
+    Number key = keyHolder.getKey();
+    if (key == null) {
+      // This should never happen. If it does, something is wrong with the DB or the way the prepared statement is set up.
+      throw new FatalException("Could not extract key for newly created horse. There is probably a programming error…");
+    }
+
+    return new Horse()
+        .setId(key.longValue())
+        .setName(newHorse.name())
+        .setDescription(newHorse.description())
+        .setDateOfBirth(newHorse.dateOfBirth())
+        .setSex(newHorse.sex())
+        .setOwnerId(null)
+        ;
+  }
 
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {
     return new Horse()

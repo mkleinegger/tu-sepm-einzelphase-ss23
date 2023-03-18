@@ -12,12 +12,14 @@ import at.ac.tuwien.sepm.assignment.individual.mapper.HorseMapper;
 import at.ac.tuwien.sepm.assignment.individual.persistence.HorseDao;
 import at.ac.tuwien.sepm.assignment.individual.service.HorseService;
 import at.ac.tuwien.sepm.assignment.individual.service.OwnerService;
+
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -76,6 +78,14 @@ public class HorseServiceImpl implements HorseService {
         ownerMapForSingleId(horse.getOwnerId()));
   }
 
+  @Override
+  public HorseDetailDto create(HorseCreateDto newHorse) throws ValidationException, ConflictException {
+    LOG.trace("create({})", newHorse);
+
+    validator.validateForCreate(newHorse);
+    Long ownerId = newHorse.owner() != null ? newHorse.owner().id() : null;
+    return mapper.entityToDetailDto(dao.create(newHorse), ownerMapForSingleId(ownerId));
+  }
 
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {
     try {

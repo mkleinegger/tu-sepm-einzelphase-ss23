@@ -7,8 +7,10 @@ import at.ac.tuwien.sepm.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepm.assignment.individual.exception.ValidationException;
 import at.ac.tuwien.sepm.assignment.individual.service.HorseService;
+
 import java.lang.invoke.MethodHandles;
 import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -52,7 +54,6 @@ public class HorseEndpoint {
     }
   }
 
-
   @PutMapping("{id}")
   public HorseDetailDto update(@PathVariable long id, @RequestBody HorseDetailDto toUpdate) throws ValidationException, ConflictException {
     LOG.info("PUT " + BASE_PATH + "/{}", toUpdate);
@@ -66,6 +67,13 @@ public class HorseEndpoint {
     }
   }
 
+  @PostMapping
+  public HorseDetailDto create(@RequestBody HorseCreateDto toCreate) throws ValidationException, ConflictException {
+    LOG.info("POST " + BASE_PATH);
+    LOG.debug("Body of request:\n{}", toCreate);
+
+    return service.create(toCreate);
+  }
 
   private void logClientError(HttpStatus status, String message, Exception e) {
     LOG.warn("{} {}: {}: {}", status.value(), message, e.getClass().getSimpleName(), e.getMessage());
