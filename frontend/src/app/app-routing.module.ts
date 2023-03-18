@@ -8,6 +8,7 @@ const routes: Routes = [
   {path: 'horses', children: [
     {path: '', component: HorseComponent},
     {path: 'edit/:id', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.edit}},
+    {path: 'create', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.create}},
   ]},
   {path: '**', redirectTo: 'horses'},
 ];

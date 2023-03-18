@@ -36,6 +36,9 @@ public class HorseJdbcDao implements HorseDao {
       + "  , owner_id = ?"
       + " WHERE id = ?";
 
+  private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
+
+
   private final JdbcTemplate jdbcTemplate;
 
   public HorseJdbcDao(JdbcTemplate jdbcTemplate) {
@@ -121,6 +124,13 @@ public class HorseJdbcDao implements HorseDao {
         .setSex(newHorse.sex())
         .setOwnerId(null)
         ;
+  }
+
+  @Override
+  public Horse delete(long id) throws NotFoundException {
+    Horse deletedHorse = getById(id);
+    jdbcTemplate.update(SQL_DELETE, id);
+    return deletedHorse;
   }
 
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {

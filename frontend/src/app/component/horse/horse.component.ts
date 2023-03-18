@@ -3,6 +3,8 @@ import {ToastrService} from 'ngx-toastr';
 import {HorseService} from 'src/app/service/horse.service';
 import {Horse} from '../../dto/horse';
 import {Owner} from '../../dto/owner';
+import {Observable} from 'rxjs';
+
 
 @Component({
   selector: 'app-horse',
@@ -22,6 +24,22 @@ export class HorseComponent implements OnInit {
   ngOnInit(): void {
     this.reloadHorses();
   }
+
+  public deleteHorse(horse: Horse | null | undefined) {
+    if( horse != null) {
+       const observable: Observable<Horse> = this.service.delete(horse);
+       observable.subscribe({
+         next: data => {
+           this.notification.success(`Horse ${horse.name} successfully deleted`);
+           this.reloadHorses();
+         },
+         error: error => {
+           console.error('Error creating horse', error);
+           // TODO show an error message to the user. Include and sensibly present the info from the backend!
+         }
+       });
+     }
+   }
 
   reloadHorses() {
     this.service.getAll()

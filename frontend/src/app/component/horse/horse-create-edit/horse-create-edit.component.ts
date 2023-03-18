@@ -105,6 +105,22 @@ export class HorseCreateEditComponent implements OnInit {
       : `${owner.firstName} ${owner.lastName}`;
   }
 
+  public deleteHorse(horse: Horse | null | undefined) {
+    if( horse != null) {
+       const observable: Observable<Horse> = this.service.delete(horse);
+       observable.subscribe({
+         next: data => {
+           this.notification.success(`Horse ${horse.name} successfully deleted`);
+           this.router.navigate(['/horses']);
+         },
+         error: error => {
+           console.error('Error creating horse', error);
+           // TODO show an error message to the user. Include and sensibly present the info from the backend!
+         }
+       });
+     }
+   }
+
   public onSubmit(form: NgForm): void {
     console.log('is form valid?', form.valid, this.horse);
     if (form.valid) {

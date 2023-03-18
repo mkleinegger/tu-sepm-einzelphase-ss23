@@ -87,6 +87,15 @@ public class HorseServiceImpl implements HorseService {
     return mapper.entityToDetailDto(dao.create(newHorse), ownerMapForSingleId(ownerId));
   }
 
+  @Override
+  public HorseDetailDto delete(long id) throws NotFoundException {
+    LOG.trace("delete({})", id);
+    Horse horse = dao.delete(id);
+    return mapper.entityToDetailDto(
+        horse,
+        ownerMapForSingleId(horse.getOwnerId()));
+  }
+
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {
     try {
       return ownerId == null

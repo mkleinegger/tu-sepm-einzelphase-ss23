@@ -111,6 +111,11 @@
                aria-label="Show horse details">
               <i class="bi bi-info-lg"></i>
             </a>
+            <a class="btn btn-sm responsive-danger-button"
+              aria-label="Delete horse"
+              (click)="deleteHorse(horse)">
+              <i class="bi bi-trash"></i>
+            </a>
             <a class="btn btn-sm responsive-warning-button"
                [routerLink]="['edit', horse.id]"
                aria-label="Edit horse">

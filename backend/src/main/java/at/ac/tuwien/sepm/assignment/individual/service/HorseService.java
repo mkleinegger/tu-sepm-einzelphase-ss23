@@ -53,4 +53,13 @@ public interface HorseService {
    * @throws ValidationException if attributes are not valid
    */
   HorseDetailDto create(HorseCreateDto newHorse) throws ValidationException, ConflictException;
+
+  /**
+   * Deletes the horse with given ID.
+   *
+   * @param id the ID of the horse to get
+   * @return the horse with ID {@code id}
+   * @throws NotFoundException if the horse with the given ID does not exist in the persistent data store
+   */
+  HorseDetailDto delete(long id) throws NotFoundException;
 }

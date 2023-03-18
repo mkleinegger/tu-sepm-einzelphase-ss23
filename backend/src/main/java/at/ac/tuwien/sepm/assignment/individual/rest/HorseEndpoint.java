@@ -11,6 +11,7 @@ import at.ac.tuwien.sepm.assignment.individual.service.HorseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -76,6 +77,12 @@ public class HorseEndpoint {
     LOG.debug("Body of request:\n{}", toCreate);
 
     return service.create(toCreate);
+  }
+
+  @DeleteMapping("{id}")
+  public HorseDetailDto delete(@PathVariable long id) throws NotFoundException {
+    LOG.info("DELETE " + BASE_PATH + "/{}", id);
+    return service.delete(id);
   }
 
   private void logClientError(HttpStatus status, String message, Exception e) {
