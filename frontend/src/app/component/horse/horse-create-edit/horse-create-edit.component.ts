@@ -30,7 +30,6 @@ export class HorseCreateEditComponent implements OnInit {
     sex: Sex.female,
   };
 
-
   constructor(
     private service: HorseService,
     private ownerService: OwnerService,
@@ -45,7 +44,7 @@ export class HorseCreateEditComponent implements OnInit {
       case HorseCreateEditMode.create:
         return 'Create New Horse';
       default:
-        return '?';
+        return 'Edit Horse';
     }
   }
 
@@ -54,7 +53,7 @@ export class HorseCreateEditComponent implements OnInit {
       case HorseCreateEditMode.create:
         return 'Create';
       default:
-        return '?';
+        return 'Save';
     }
   }
 
@@ -62,13 +61,12 @@ export class HorseCreateEditComponent implements OnInit {
     return this.mode === HorseCreateEditMode.create;
   }
 
-
   private get modeActionFinished(): string {
     switch (this.mode) {
       case HorseCreateEditMode.create:
         return 'created';
       default:
-        return '?';
+        return 'edited';
     }
   }
 
@@ -80,6 +78,16 @@ export class HorseCreateEditComponent implements OnInit {
     this.route.data.subscribe(data => {
       this.mode = data.mode;
     });
+
+    if(this.mode === HorseCreateEditMode.edit) {
+      this.route.paramMap.subscribe( paramMap => {
+        //id should always be present, because if not this route is not accesible
+        const id = paramMap.get('id');
+        this.service.getById(id).subscribe((response: Horse) => {
+          this.horse = response;
+        });
+      });
+    }
   }
 
   public dynamicCssClassesForInput(input: NgModel): any {
@@ -97,7 +105,6 @@ export class HorseCreateEditComponent implements OnInit {
       : `${owner.firstName} ${owner.lastName}`;
   }
 
-
   public onSubmit(form: NgForm): void {
     console.log('is form valid?', form.valid, this.horse);
     if (form.valid) {
@@ -108,6 +115,9 @@ export class HorseCreateEditComponent implements OnInit {
       switch (this.mode) {
         case HorseCreateEditMode.create:
           observable = this.service.create(this.horse);
+          break;
+        case HorseCreateEditMode.edit:
+          observable = this.service.update(this.horse);
           break;
         default:
           console.error('Unknown HorseCreateEditMode', this.mode);

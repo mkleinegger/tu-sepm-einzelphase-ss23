@@ -25,6 +25,14 @@ export class HorseService {
     return this.http.get<Horse[]>(baseUri);
   }
 
+  /**
+   * Get horse with specified id
+   *
+   * @return observable for the specified horse.
+   */
+  getById(id: string | null): Observable<Horse> {
+    return this.http.get<Horse>(`${baseUri}/${id}`);
+  }
 
   /**
    * Create a new horse in the system.
@@ -35,6 +43,20 @@ export class HorseService {
   create(horse: Horse): Observable<Horse> {
     return this.http.post<Horse>(
       baseUri,
+      horse
+    );
+  }
+
+  /**
+   * Updates an existing horse in the system
+   *
+   * @param id the id of the horse that should be updated
+   * @param horse the data for the horse that should be updated
+   * @return an Observable for the updated horse
+   */
+  update(horse: Horse): Observable<Horse> {
+    return this.http.put<Horse>(
+      `${baseUri}/${horse.id}`,
       horse
     );
   }
