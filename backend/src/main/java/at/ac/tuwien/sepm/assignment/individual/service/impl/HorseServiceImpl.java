@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -62,7 +63,10 @@ public class HorseServiceImpl implements HorseService {
     LOG.trace("update({})", horse);
     validator.validateForUpdate(horse);
     var updatedHorse = dao.update(horse);
-    return mapper.entityToDetailDto(updatedHorse, ownerMapForSingleId(updatedHorse.getOwnerId()));
+
+    return mapper.entityToDetailDto(updatedHorse,
+        ownerMapForSingleId(updatedHorse.getOwnerId()),
+        horseMapForIds(updatedHorse.getMotherId(), updatedHorse.getFatherId()));
   }
 
 
@@ -70,7 +74,9 @@ public class HorseServiceImpl implements HorseService {
   public HorseDetailDto getById(long id) throws NotFoundException {
     LOG.trace("details({})", id);
     Horse horse = dao.getById(id);
-    return mapper.entityToDetailDto(horse, ownerMapForSingleId(horse.getOwnerId()));
+    return mapper.entityToDetailDto(horse,
+        ownerMapForSingleId(horse.getOwnerId()),
+        horseMapForIds(horse.getMotherId(), horse.getFatherId()));
   }
 
   @Override
@@ -78,15 +84,18 @@ public class HorseServiceImpl implements HorseService {
     LOG.trace("create({})", newHorse);
 
     validator.validateForCreate(newHorse);
-    Long ownerId = newHorse.owner() != null ? newHorse.owner().id() : null;
-    return mapper.entityToDetailDto(dao.create(newHorse), ownerMapForSingleId(ownerId));
+    return mapper.entityToDetailDto(dao.create(newHorse),
+        ownerMapForSingleId(newHorse.ownerId()),
+        horseMapForIds(newHorse.motherId(), newHorse.fatherId()));
   }
 
   @Override
   public HorseDetailDto delete(long id) throws NotFoundException {
     LOG.trace("delete({})", id);
     Horse horse = dao.delete(id);
-    return mapper.entityToDetailDto(horse, ownerMapForSingleId(horse.getOwnerId()));
+    return mapper.entityToDetailDto(horse,
+        ownerMapForSingleId(horse.getOwnerId()),
+        horseMapForIds(horse.getMotherId(), horse.getFatherId()));
   }
 
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {
@@ -94,6 +103,27 @@ public class HorseServiceImpl implements HorseService {
       return ownerId == null ? null : Collections.singletonMap(ownerId, ownerService.getById(ownerId));
     } catch (NotFoundException e) {
       throw new FatalException("Owner %d referenced by horse not found".formatted(ownerId));
+    }
+  }
+
+  private Map<Long, HorseDetailDto> horseMapForIds(Long... ids) {
+    try {
+      if (ids.length == 0) {
+        return null;
+      }
+
+      HashMap<Long, HorseDetailDto> result = new HashMap<>();
+      for (Long id : ids) {
+        if (id != null) {
+          Horse h = dao.getById(id);
+          result.put(id, mapper.entityToDetailDto(h,
+              ownerMapForSingleId(h.getOwnerId()), null));
+        }
+      }
+
+      return result;
+    } catch (NotFoundException e) {
+      throw new FatalException("Owner %d referenced by horse not found".formatted(ids));
     }
   }
 

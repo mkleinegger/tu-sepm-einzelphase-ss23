@@ -5,13 +5,12 @@ import at.ac.tuwien.sepm.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.OwnerDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
-
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
 
 @Component
 public class HorseMapper {
@@ -54,12 +53,12 @@ public class HorseMapper {
    */
   public HorseDetailDto entityToDetailDto(
       Horse horse,
-      Map<Long, OwnerDto> owners) {
+      Map<Long, OwnerDto> owners,
+      Map<Long, HorseDetailDto> parents) {
     LOG.trace("entityToDto({})", horse);
     if (horse == null) {
       return null;
     }
-
 
     return new HorseDetailDto(
         horse.getId(),
@@ -67,7 +66,9 @@ public class HorseMapper {
         horse.getDescription(),
         horse.getDateOfBirth(),
         horse.getSex(),
-        getOwner(horse, owners)
+        getOwner(horse, owners),
+        getMother(horse, parents),
+        getFather(horse, parents)
     );
   }
 
@@ -81,6 +82,30 @@ public class HorseMapper {
       owner = owners.get(ownerId);
     }
     return owner;
+  }
+
+  private HorseDetailDto getFather(Horse horse, Map<Long, HorseDetailDto> parents) {
+    HorseDetailDto father = null;
+    var fatherId = horse.getFatherId();
+    if (fatherId != null && parents != null) {
+      if (!parents.containsKey(fatherId)) {
+        throw new FatalException("Given owner map does not contain owner of this Horse (%d)".formatted(horse.getId()));
+      }
+      father = parents.get(fatherId);
+    }
+    return father;
+  }
+
+  private HorseDetailDto getMother(Horse horse, Map<Long, HorseDetailDto> parents) {
+    HorseDetailDto mother = null;
+    var motherId = horse.getMotherId();
+    if (motherId != null && parents != null) {
+      if (!parents.containsKey(motherId)) {
+        throw new FatalException("Given owner map does not contain owner of this Horse (%d)".formatted(horse.getId()));
+      }
+      mother = parents.get(motherId);
+    }
+    return mother;
   }
 
 }

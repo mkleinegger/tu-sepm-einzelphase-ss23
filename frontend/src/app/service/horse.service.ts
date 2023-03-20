@@ -2,7 +2,7 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from 'src/environments/environment';
-import {Horse} from '../dto/horse';
+import {Horse, HorseSearch} from '../dto/horse';
 import {Sex} from '../dto/sex';
 
 const baseUri = environment.backendUrl + '/horses';
@@ -23,6 +23,30 @@ export class HorseService {
    */
   getAll(): Observable<Horse[]> {
     return this.http.get<Horse[]>(baseUri);
+  }
+
+  search(searchParams: HorseSearch): Observable<Horse[]> {
+    console.log(searchParams);
+    let params = new HttpParams();
+
+    if(searchParams.name) params = params.set('name', searchParams.name);
+    if(searchParams.description) params = params.set('description', searchParams.description);
+    if(searchParams.bornBefore) params = params.set('bornBefore', searchParams.bornBefore.toString());
+    if(searchParams.ownerName) params = params.set('ownerName', searchParams.ownerName);
+    if(searchParams.sex) params = params.set('sex', searchParams.sex);    
+    if(searchParams.limit) params = params.set('limit', searchParams.limit);
+
+    console.log(params);
+
+
+    return this.http.get<Horse[]>(baseUri, { params });
+  }
+
+  public searchByName(name: string, limitTo: number): Observable<Horse[]> {
+    const params = new HttpParams()
+      .set('name', name)
+      .set('limit', limitTo);
+    return this.http.get<Horse[]>(baseUri, { params });
   }
 
   /**

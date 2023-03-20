@@ -13,4 +13,21 @@ public record HorseCreateDto(
     HorseDetailDto mother,
     HorseDetailDto father
 ) {
+  public Long ownerId() {
+    return owner == null
+        ? null
+        : owner.id();
+  }
+
+  public Long fatherId() {
+    return father == null
+        ? null
+        : father.id();
+  }
+
+  public Long motherId() {
+    return mother == null
+        ? null
+        : mother.id();
+  }
 }

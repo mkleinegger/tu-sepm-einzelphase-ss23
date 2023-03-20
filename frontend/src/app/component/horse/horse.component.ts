@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ToastrService} from 'ngx-toastr';
 import {HorseService} from 'src/app/service/horse.service';
-import {Horse} from '../../dto/horse';
+import {Horse, HorseSearch} from '../../dto/horse';
 import {Owner} from '../../dto/owner';
 import {Observable} from 'rxjs';
 
@@ -15,6 +15,14 @@ export class HorseComponent implements OnInit {
   search = false;
   horses: Horse[] = [];
   bannerError: string | null = null;
+  horseSearch: HorseSearch = {
+    name: undefined,
+    description: undefined,
+    bornBefore: undefined,
+    sex: undefined,
+    ownerName: undefined,
+    limit: undefined
+  };
 
   constructor(
     private service: HorseService,
@@ -42,7 +50,7 @@ export class HorseComponent implements OnInit {
    }
 
   reloadHorses() {
-    this.service.getAll()
+    this.service.search(this.horseSearch)
       .subscribe({
         next: data => {
           this.horses = data;

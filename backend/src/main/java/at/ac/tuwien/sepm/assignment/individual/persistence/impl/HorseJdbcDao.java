@@ -30,13 +30,16 @@ public class HorseJdbcDao implements HorseDao {
   private static final String TABLE_NAME = "horse";
   private static final String SQL_SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
   private static final String SQL_SELECT_BY_ID = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
-  private static final String SQL_CREATE = "INSERT INTO " + TABLE_NAME + " (name, description, date_of_birth, sex, owner_id) VALUES (?, ?, ?, ?, ?)";
+  private static final String SQL_CREATE =
+      "INSERT INTO " + TABLE_NAME + " (name, description, date_of_birth, sex, owner_id, mother_id, father_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
   private static final String SQL_UPDATE = "UPDATE " + TABLE_NAME
       + " SET name = ?"
       + "  , description = ?"
       + "  , date_of_birth = ?"
       + "  , sex = ?"
       + "  , owner_id = ?"
+      + "  , mother_id = ?"
+      + "  , father_id = ?"
       + " WHERE id = ?";
 
   private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
@@ -87,7 +90,10 @@ public class HorseJdbcDao implements HorseDao {
         horse.dateOfBirth(),
         horse.sex().toString(),
         horse.ownerId(),
+        horse.motherId(),
+        horse.fatherId(),
         horse.id());
+
     if (updated == 0) {
       throw new NotFoundException("Could not update horse with ID " + horse.id() + ", because it does not exist");
     }
@@ -99,14 +105,13 @@ public class HorseJdbcDao implements HorseDao {
         .setDateOfBirth(horse.dateOfBirth())
         .setSex(horse.sex())
         .setOwnerId(horse.ownerId())
-        ;
+        .setMotherId(horse.motherId())
+        .setFatherId(horse.fatherId());
   }
 
   @Override
   public Horse create(HorseCreateDto newHorse) {
     LOG.trace("create({})", newHorse);
-
-    var ownerId = newHorse.owner() != null ? String.valueOf(newHorse.owner().id()) : null;
 
     GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
     jdbcTemplate.update(con -> {
@@ -115,7 +120,21 @@ public class HorseJdbcDao implements HorseDao {
       stmt.setString(2, newHorse.description());
       stmt.setString(3, String.valueOf(newHorse.dateOfBirth()));
       stmt.setString(4, newHorse.sex().toString());
-      stmt.setString(5, ownerId);
+      if (newHorse.ownerId() != null) {
+        stmt.setLong(5, newHorse.ownerId());
+      } else {
+        stmt.setNull(5, java.sql.Types.NULL);
+      }
+      if (newHorse.motherId() != null) {
+        stmt.setLong(6, newHorse.motherId());
+      } else {
+        stmt.setNull(6, java.sql.Types.NULL);
+      }
+      if (newHorse.fatherId() != null) {
+        stmt.setLong(7, newHorse.fatherId());
+      } else {
+        stmt.setNull(7, java.sql.Types.NULL);
+      }
 
       return stmt;
     }, keyHolder);
@@ -132,14 +151,24 @@ public class HorseJdbcDao implements HorseDao {
         .setDescription(newHorse.description())
         .setDateOfBirth(newHorse.dateOfBirth())
         .setSex(newHorse.sex())
-        .setOwnerId((ownerId != null) ? Long.parseLong(ownerId) : null)
+        .setOwnerId(newHorse.ownerId())
+        .setMotherId(newHorse.motherId())
+        .setFatherId(newHorse.fatherId())
         ;
   }
 
   @Override
   public Horse delete(long id) throws NotFoundException {
     Horse deletedHorse = getById(id);
-    jdbcTemplate.update(SQL_DELETE, id);
+    int affectedRows = jdbcTemplate.update(connection -> {
+      PreparedStatement stmt = connection.prepareStatement(SQL_DELETE, Statement.RETURN_GENERATED_KEYS);
+      stmt.setLong(1, id);
+      return stmt;
+    });
+
+    if (affectedRows == 0) {
+      throw new NotFoundException("No horse with ID %d deleted".formatted(id));
+    }
     return deletedHorse;
   }
 
@@ -189,6 +218,9 @@ public class HorseJdbcDao implements HorseDao {
         .setDescription(result.getString("description"))
         .setDateOfBirth(result.getDate("date_of_birth").toLocalDate())
         .setSex(Sex.valueOf(result.getString("sex")))
-        .setOwnerId(result.getObject("owner_id", Long.class));
+        .setOwnerId(result.getObject("owner_id", Long.class))
+        .setMotherId(result.getObject("mother_id", Long.class))
+        .setFatherId(result.getObject("father_id", Long.class));
+
   }
 }
