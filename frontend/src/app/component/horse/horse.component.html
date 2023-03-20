@@ -41,7 +41,9 @@
     </label>
     <input type="text" name="searchHorseName"
            class="form-control"
-           >
+           [(ngModel)]="horseSearch.name"
+           (input)="reloadHorses()"
+    >
   </div>
   <div class="flex-grow-1 ms-1">
     <label for="searchHorseDescription" class="col-form-label">
@@ -49,7 +51,9 @@
     </label>
     <input type="text" name="searchHorseDescription"
            class="form-control"
-           >
+           [(ngModel)]="horseSearch.description"
+           (input)="reloadHorses()"
+    >
   </div>
   <div class="ms-1">
     <label for="searchHorseDateOfBirth" class="col-form-label">
@@ -62,6 +66,8 @@
            pattern="\d{4}-\d{2}-\d{2}"
            placeholder="yyyy-mm-dd"
            class="form-control"
+           [(ngModel)]="horseSearch.bornBefore"
+           (input)="reloadHorses()"
            >
   </div>
   <div class="ms-1">
@@ -70,6 +76,8 @@
     </label>
     <select name="searchHorseSex"
             class="form-select"
+            [(ngModel)]="horseSearch.sex"
+            (change)="reloadHorses()"
             >
       <option></option>
       <option value="FEMALE">Female</option>

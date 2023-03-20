@@ -2,9 +2,11 @@ package at.ac.tuwien.sepm.assignment.individual.persistence;
 
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseCreateDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseDetailDto;
+import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -54,4 +56,17 @@ public interface HorseDao {
    * @return the deleted horse
    */
   Horse delete(long id) throws NotFoundException;
+
+  /**
+   * Search for owners matching the criteria in {@code searchParameters}.
+   * <p>
+   * A owner is considered matched, if its name contains {@code searchParameters.name} as a substring.
+   * The returned stream of owners never contains more than {@code searchParameters.maxAmount} elements,
+   * even if there would be more matches in the persistent data store.
+   * </p>
+   *
+   * @param searchParameters object containing the search parameters to match
+   * @return a stream containing owners matching the criteria in {@code searchParameters}
+   */
+  Collection<Horse> search(HorseSearchDto searchParameters);
 }

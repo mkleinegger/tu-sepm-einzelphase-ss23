@@ -2,6 +2,7 @@ package at.ac.tuwien.sepm.assignment.individual.persistence.impl;
 
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseCreateDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseDetailDto;
+import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
@@ -18,6 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -37,6 +40,13 @@ public class HorseJdbcDao implements HorseDao {
       + " WHERE id = ?";
 
   private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
+  private static final String SQL_SELECT_WHERE = " WHERE UPPER(name) like UPPER('%'||COALESCE(?, '')||'%')";
+  private static final String SQL_SELECT_SEARCH_DESCRIPTION_CLAUSE = " AND UPPER(description) like UPPER('%'||COALESCE(?, '')||'%')";
+  private static final String SQL_SELECT_SEARCH_DATE_CLAUSE = " AND date_of_birth > ?";
+  private static final String SQL_SELECT_SEARCH_SEX_CLAUSE = " AND UPPER(sex) like UPPER(COALESCE(?, '%')) ";
+  private static final String SQL_SELECT_SEARCH_OWNER_CLAUSE = " AND date > ?";
+
+  private static final String SQL_SELECT_SEARCH_LIMIT_CLAUSE = " LIMIT ?";
 
 
   private final JdbcTemplate jdbcTemplate;
@@ -122,7 +132,7 @@ public class HorseJdbcDao implements HorseDao {
         .setDescription(newHorse.description())
         .setDateOfBirth(newHorse.dateOfBirth())
         .setSex(newHorse.sex())
-        .setOwnerId(null)
+        .setOwnerId((ownerId != null) ? Long.parseLong(ownerId) : null)
         ;
   }
 
@@ -133,6 +143,45 @@ public class HorseJdbcDao implements HorseDao {
     return deletedHorse;
   }
 
+  @Override
+  public Collection<Horse> search(HorseSearchDto searchParameters) {
+    LOG.trace("search({})", searchParameters);
+    var query = SQL_SELECT_ALL;
+    var params = new ArrayList<>();
+
+    if (searchParameters != null) {
+      query += SQL_SELECT_WHERE;
+      params.add(searchParameters.name());
+
+      //name
+      var description = searchParameters.description();
+      if (description != null) {
+        query += SQL_SELECT_SEARCH_DESCRIPTION_CLAUSE;
+        params.add(description);
+      }
+
+      var bornBefore = searchParameters.bornBefore();
+      if (bornBefore != null) {
+        query += SQL_SELECT_SEARCH_DATE_CLAUSE;
+        params.add(bornBefore);
+      }
+
+      var sex = searchParameters.sex();
+      if (sex != null) {
+        query += SQL_SELECT_SEARCH_SEX_CLAUSE;
+        params.add(sex.toString());
+      }
+
+      // limit
+      var maxAmount = searchParameters.limit();
+      if (maxAmount != null) {
+        query += SQL_SELECT_SEARCH_LIMIT_CLAUSE;
+        params.add(maxAmount);
+      }
+    }
+    return jdbcTemplate.query(query, this::mapRow, params.toArray());
+  }
+
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {
     return new Horse()
         .setId(result.getLong("id"))
@@ -140,7 +189,6 @@ public class HorseJdbcDao implements HorseDao {
         .setDescription(result.getString("description"))
         .setDateOfBirth(result.getDate("date_of_birth").toLocalDate())
         .setSex(Sex.valueOf(result.getString("sex")))
-        .setOwnerId(result.getObject("owner_id", Long.class))
-        ;
+        .setOwnerId(result.getObject("owner_id", Long.class));
   }
 }
