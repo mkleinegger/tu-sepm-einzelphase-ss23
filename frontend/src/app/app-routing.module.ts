@@ -1,11 +1,14 @@
-import { HorseDetailComponent } from './component/horse/horse-detail/horse-detail.component';
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {HorseCreateEditComponent, HorseCreateEditMode} from './component/horse/horse-create-edit/horse-create-edit.component';
 import {HorseComponent} from './component/horse/horse.component';
+import {OwnerComponent} from './component/owner/owner.component';
+import {HorseDetailComponent} from './component/horse/horse-detail/horse-detail.component';
+
 
 const routes: Routes = [
   {path: '', redirectTo: 'horses', pathMatch: 'full'},
+  {path: 'owners', component: OwnerComponent},    
   {path: 'horses', children: [
     {path: '', component: HorseComponent},    
     {path: 'detail/:id', component: HorseDetailComponent},

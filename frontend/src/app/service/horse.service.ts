@@ -3,7 +3,6 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from 'src/environments/environment';
 import {Horse, HorseSearch} from '../dto/horse';
-import {Sex} from '../dto/sex';
 
 const baseUri = environment.backendUrl + '/horses';
 

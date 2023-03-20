@@ -1,0 +1,65 @@
+<div class="d-flex flex-row w-auto">
+    <button class="btn btn-primary mr-1" (click)="reloadHorses()" aria-label="Reload horses">
+      <i class="bi bi-arrow-clockwise"></i>
+      Reload
+    </button>
+    <span style="flex: 1"></span>
+    <button class="btn btn-primary mr-1" (click)="dialog.showModal()" aria-label="Reload horses">
+        <i class="bi bi-plus-lg"></i>
+        New Owner
+      </button>
+    <a class="btn btn-secondary" routerLink="create" aria-label="New horse">
+      <i class="bi bi-plus-lg"></i>
+      New Owner
+    </a>
+  </div>
+  
+  <div class="mt-3">
+    <table class="table table-hover">
+      <thead>
+        <th>Firstname</th>
+        <th>Lastname</th>
+        <th>E-Mail</th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let owner of owners" class="center-td">
+          <td>{{owner.firstname}}</td>
+          <td>{{owner.lastname}}</td>
+          <td>{{owner.email}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+ <dialog #dialog>
+    <div class="row">
+        <!-- Start name and date of birth row -->
+        <div class="mb-2 col-lg-12 col-md-12">
+          <!-- When nesting rows, always make row > col-* > row. The Bootstrap classes do not work right when an element is both col* and row -->
+          <div class="row">
+            <label for="horseName" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+                Firstname
+            </label>
+            <div class="col-md-10 col-lg-8">
+              <input type="text"
+                     id="horseName"
+                     name="horseName"
+                     placeholder="Firstname"
+                     class="form-control"
+                     [class]="dynamicCssClassesForInput(horseNameModel)"
+                     [(ngModel)]="horse.name"
+                     #horseNameModel="ngModel"
+                     required
+                     >
+              <div class="invalid-feedback">
+                <!-- This is shown, when the form validation deems the name input to be invalid -->
+                Name is required
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  <div>
+    <button class="btn btn-primary" (click)="dialog.close()">OK</button>
+  </div>
+</dialog>

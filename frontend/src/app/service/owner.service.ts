@@ -15,6 +15,10 @@ export class OwnerService {
     private http: HttpClient,
   ) { }
 
+  public getAll(): Observable<Owner[]> {
+    return this.http.get<Owner[]>(baseUri);
+  }
+
   public searchByName(name: string, limitTo: number): Observable<Owner[]> {
     const params = new HttpParams()
       .set('name', name)
