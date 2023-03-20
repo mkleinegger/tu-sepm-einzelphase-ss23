@@ -11,8 +11,7 @@
         <label for="horseName" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
           Name
         </label>
-        <div class="col-md-10 col-lg-8"
-             >
+        <div class="col-md-10 col-lg-8">
           <input type="text"
                  id="horseName"
                  name="horseName"
@@ -112,13 +111,6 @@
           [formatModel]="formatHorseName"
           [suggestions]="horseSuggestions"
           ></app-autocomplete>
-          <button type="button"
-          class="btn btn-danger col-md-2 col-lg-2"
-          *ngIf="!modeIsCreate"
-          (click)="deleteHorse(horse)"
-          >
-          x
-        </button>
       </div>
     </div>
     <div class="mb-2 col-lg-6">

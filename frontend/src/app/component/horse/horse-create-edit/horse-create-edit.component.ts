@@ -3,7 +3,7 @@ import {NgForm, NgModel} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import {Observable, of} from 'rxjs';
-import {Horse} from 'src/app/dto/horse';
+import {Horse, HorseSearch} from 'src/app/dto/horse';
 import {Owner} from 'src/app/dto/owner';
 import {Sex} from 'src/app/dto/sex';
 import {HorseService} from 'src/app/service/horse.service';
@@ -28,7 +28,13 @@ export class HorseCreateEditComponent implements OnInit {
     description: '',
     dateOfBirth: new Date(),
     sex: Sex.female,
+    mother: undefined,
+    father: undefined
   };
+  search: HorseSearch = {
+    name: undefined,
+    limit: 5
+  }
 
   constructor(
     private service: HorseService,
@@ -74,6 +80,10 @@ export class HorseCreateEditComponent implements OnInit {
     ? of([])
     : this.ownerService.searchByName(input, 5);
 
+  horseSuggestions = (input: string) => (input === '')
+  ? of([])
+  : this.service.searchByName(input, 5);
+
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.mode = data.mode;
@@ -103,6 +113,12 @@ export class HorseCreateEditComponent implements OnInit {
     return (owner == null)
       ? ''
       : `${owner.firstName} ${owner.lastName}`;
+  }
+
+  public formatHorseName(horse: Horse | null | undefined): string {
+    return (horse == null)
+      ? ''
+      : horse.name;
   }
 
   public deleteHorse(horse: Horse | null | undefined) {
