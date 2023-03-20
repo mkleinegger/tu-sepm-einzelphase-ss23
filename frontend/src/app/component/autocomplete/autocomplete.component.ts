@@ -96,6 +96,11 @@ export class AutocompleteComponent<T> implements OnInit, ControlValueAccessor {
     }
   }
 
+  public clearInputText(): void {
+    this.inputText = ''; 
+    this.setValue(null);
+  }
+
   /* Methods needed for ControlValueAccessor */
 
   public writeValue(obj: any): void {
