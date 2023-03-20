@@ -1,0 +1,112 @@
+
+<h1 class="display-1">Details of Horse</h1>
+
+
+<form #form="ngForm">
+    <div class="row">
+        <div class="col-md-12 col-lg-12">
+            <a [routerLink]="['/horses/edit', horse.id]">
+                <button type="button" class="btn btn-primary float-end">Edit</button>
+            </a>
+        </div>
+    </div>
+
+<div class="row">
+    <!-- Start name and date of birth row -->
+    <div class="mb-2 col-lg-6">
+      <!-- When nesting rows, always make row > col-* > row. The Bootstrap classes do not work right when an element is both col* and row -->
+      <div class="row">
+        <label for="horseName" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Name
+        </label>
+        <span id="horseName" class="col-form-label text-md-start col-md-10 col-lg-8">
+            {{horse.name}}
+        </span>
+      </div>
+    </div>
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="horseDateOfBirth" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Date of Birth
+        </label>
+        <span id="horseDateOfBirth" class="col-form-label text-md-start col-md-10 col-lg-8">
+            {{horse.dateOfBirth}}
+        </span>
+      </div>
+    </div>
+    <!-- End name and date of birth row -->
+  </div>
+
+  <div class="row">
+    <!-- Start sex and owner row -->
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="horseSex" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Sex
+        </label>
+        <span id="horseSex" class="col-form-label text-md-start col-md-10 col-lg-8">
+            {{horse.sex}}
+        </span>
+      </div>
+    </div>
+
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="horseOwner" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Owner
+        </label>
+        <span id="horseOwner" class="col-form-label text-md-start col-md-10 col-lg-8" [routerLink]="['edit', horse.id]">
+            {{formatOwnerName(horse.owner)}}
+        </span>
+      </div>
+    </div>
+    <!-- End sex and owner row -->
+  </div>
+  <div class="row">
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="horseMother" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Mother
+        </label>
+        
+            <span id="horseMother" class="col-form-label text-md-start col-md-10 col-lg-8">
+                <a [routerLink]="['/horses/detail',horse.mother.id]">{{formatHorseName(horse.mother)}}</a>
+                
+            </span>
+      </div>
+    </div>
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="horseFather" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Father
+        </label>
+      
+            <span id="horseFather" class="col-form-label text-md-start col-md-10 col-lg-8">
+                {{formatHorseName(horse.father)}}
+            </span>
+      
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- No row and col-* here. We want this to always span the whole width. -->
+    <label for="horseDescription" class="col-form-label text-md-end text-md-end text-muted col-md-2">
+      Description
+    </label>
+    <span id="horseDescription" class="col-form-label text-md-start col-md-10 col-lg-8">
+        {{horse.description}}
+    </span>
+  </div>
+
+  <div class="mt-4 d-flex flex-row">
+    <button type="button"
+            class="btn btn-danger"
+            *ngIf="!modeIsCreate"
+            (click)="deleteHorse(horse)"
+            >
+      <i class="bi bi-trash"></i>
+      Delete
+    </button>
+  </div>
+</form>
