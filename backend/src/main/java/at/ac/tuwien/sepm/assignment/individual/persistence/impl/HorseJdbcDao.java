@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -123,17 +124,17 @@ public class HorseJdbcDao implements HorseDao {
       if (newHorse.ownerId() != null) {
         stmt.setLong(5, newHorse.ownerId());
       } else {
-        stmt.setNull(5, java.sql.Types.NULL);
+        stmt.setNull(5, Types.BIGINT);
       }
       if (newHorse.motherId() != null) {
         stmt.setLong(6, newHorse.motherId());
       } else {
-        stmt.setNull(6, java.sql.Types.NULL);
+        stmt.setNull(6, Types.BIGINT);
       }
       if (newHorse.fatherId() != null) {
         stmt.setLong(7, newHorse.fatherId());
       } else {
-        stmt.setNull(7, java.sql.Types.NULL);
+        stmt.setNull(7, Types.BIGINT);
       }
 
       return stmt;
