@@ -1,0 +1,95 @@
+
+<h1 class="display-1">Create Owner</h1>
+<br>
+
+<form #form="ngForm" (ngSubmit)="onSubmit(form)">
+  <div class="row">
+    <!-- Start name and date of birth row -->
+    <div class="mb-2 col-lg-6">
+        <!-- When nesting rows, always make row > col-* > row. The Bootstrap classes do not work right when an element is both col* and row -->
+      <div class="row">
+        <label for="firstname" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Firstname
+        </label>
+        <div class="col-md-10 col-lg-8">
+          <input type="text"
+                 id="firstname"
+                 name="firstname"
+                 placeholder="Firstname"
+                 class="form-control"
+                 [class]="dynamicCssClassesForInput(ownerFirstnameModel)"
+                 [(ngModel)]="owner.firstName"
+                 #ownerFirstnameModel="ngModel"
+                 required
+                 >
+          <div class="invalid-feedback">
+            <!-- This is shown, when the form validation deems the name input to be invalid -->
+            Firstname is required
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End name and date of birth row -->
+  </div>
+
+  <div class="row">
+    <!-- Start sex and owner row -->
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="lastname" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          Lastname
+        </label>
+        <div class="col-md-10 col-lg-8"
+                >
+                <input type="text"
+                id="lastname"
+                name="lastname"
+                placeholder="Lastname"
+                class="form-control"
+                [class]="dynamicCssClassesForInput(ownerLastnameModel)"
+                [(ngModel)]="owner.lastName"
+                #ownerLastnameModel="ngModel"
+                required
+                >
+        <div class="invalid-feedback">
+            <!-- This is shown, when the form validation deems the name input to be invalid -->
+            Lastname is required
+        </div>
+        </div>
+      </div>
+    </div>
+    <!-- End sex and owner row -->
+  </div>
+  <div class="row">
+    <div class="mb-2 col-lg-6">
+      <div class="row">
+        <label for="email" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+          E-Mail
+        </label>
+        <div class="col-md-10 col-lg-8"
+                >
+                <input type="text"
+                id="email"
+                name="email"
+                placeholder="abc@horse.com"
+                class="form-control"
+                [class]="dynamicCssClassesForInput(ownerEmailModel)"
+                [(ngModel)]="owner.email"
+                #ownerEmailModel="ngModel"
+                >
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+        <button type="submit"
+            class="btn btn-primary float-end"
+            [disabled]="!form.valid"
+            type="submit"
+            >
+      Create
+    </button>
+    </div>
+  </div>
+  </div>
+</form>
