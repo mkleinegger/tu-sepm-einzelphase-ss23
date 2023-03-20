@@ -14,7 +14,7 @@ import {HorseCreateEditComponent} from './component/horse/horse-create-edit/hors
 import {HorseComponent} from './component/horse/horse.component';
 import { HorseDetailComponent } from './component/horse/horse-detail/horse-detail.component';
 import { OwnerComponent } from './component/owner/owner.component';
-import { OwnerAddComponent } from './components/owner/owner-add/owner-add.component';
+import { OwnerAddComponent } from './component/owner/owner-add/owner-add.component';
 
 @NgModule({
   declarations: [

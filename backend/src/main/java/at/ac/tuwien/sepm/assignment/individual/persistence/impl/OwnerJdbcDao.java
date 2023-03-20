@@ -6,6 +6,12 @@ import at.ac.tuwien.sepm.assignment.individual.entity.Owner;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepm.assignment.individual.persistence.OwnerDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.stereotype.Repository;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.PreparedStatement;
@@ -16,13 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public class OwnerJdbcDao implements OwnerDao {
@@ -42,7 +41,6 @@ public class OwnerJdbcDao implements OwnerDao {
     this.jdbcTemplate = jdbcTemplate;
     this.jdbcNamed = jdbcNamed;
   }
-
 
   @Override
   public Owner getById(long id) throws NotFoundException {

@@ -25,4 +25,17 @@ export class OwnerService {
       .set('maxAmount', limitTo);
     return this.http.get<Owner[]>(baseUri, { params });
   }
+
+  /**
+   * Create a new Owner in the system.
+   *
+   * @param owner the data for the horse that should be created
+   * @return an Observable for the created horse
+   */
+    create(owner: Owner): Observable<Owner> {
+      return this.http.post<Owner>(
+        baseUri,
+        owner
+      );
+    }
 }
