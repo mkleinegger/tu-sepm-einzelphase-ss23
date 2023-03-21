@@ -49,8 +49,13 @@ public class HorseJdbcDao implements HorseDao {
   private static final String SQL_SELECT_SEARCH_DATE_CLAUSE = " AND date_of_birth > ?";
   private static final String SQL_SELECT_SEARCH_SEX_CLAUSE = " AND UPPER(sex) like UPPER(COALESCE(?, '%')) ";
   private static final String SQL_SELECT_SEARCH_OWNER_CLAUSE = " AND date > ?";
-
   private static final String SQL_SELECT_SEARCH_LIMIT_CLAUSE = " LIMIT ?";
+  private static final String SQL_SELECT_GENERATION = ""
+      + "WITH RECURSIVE ancestor(id, name, description, date_of_birth, sex, owner_id, mother_id, father_id, generation) AS ("
+      + " SELECT *, 1 as generation FROM horse where Id = ?"
+      + " UNION ALL "
+      + " SELECT horse.*, (ancestor.generation + 1) FROM horse, ancestor"
+      + " WHERE (ancestor.mother_id = horse.id OR ancestor.father_id = horse.id) AND ancestor.generation < ?) SELECT * FROM ancestor";
 
 
   private final JdbcTemplate jdbcTemplate;
@@ -212,6 +217,13 @@ public class HorseJdbcDao implements HorseDao {
     return jdbcTemplate.query(query, this::mapRow, params.toArray());
   }
 
+  @Override
+  public Collection<Horse> getGenerationsAsTree(long id, long limit) {
+    LOG.trace("getGenerationsAsTree({}, {})", id, limit);
+
+    return jdbcTemplate.query(SQL_SELECT_GENERATION, this::mapRow, id, limit);
+  }
+
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {
     return new Horse()
         .setId(result.getLong("id"))
@@ -222,6 +234,5 @@ public class HorseJdbcDao implements HorseDao {
         .setOwnerId(result.getObject("owner_id", Long.class))
         .setMotherId(result.getObject("mother_id", Long.class))
         .setFatherId(result.getObject("father_id", Long.class));
-
   }
 }

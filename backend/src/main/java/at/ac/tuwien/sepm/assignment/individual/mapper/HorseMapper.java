@@ -2,6 +2,7 @@ package at.ac.tuwien.sepm.assignment.individual.mapper;
 
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseListDto;
+import at.ac.tuwien.sepm.assignment.individual.dto.HorseTreeDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.OwnerDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.Map;
 
 @Component
@@ -106,6 +108,27 @@ public class HorseMapper {
       mother = parents.get(motherId);
     }
     return mother;
+  }
+
+  public HorseTreeDto entityToTreeDto(Horse h, Collection<Horse> horses, int generation) {
+    LOG.trace("entityToDto({})", horses);
+    if (horses == null || h == null) {
+      return null;
+    }
+
+    var mother = (h.getMotherId() == null) ? null : horses.stream().filter(horse -> horse.getId() == h.getMotherId()).findFirst().get();
+    var father = (h.getFatherId() == null) ? null : horses.stream().filter(horse -> horse.getId() == h.getFatherId()).findFirst().get();
+
+
+    return new HorseTreeDto(
+        h.getId(),
+        h.getName(),
+        h.getDateOfBirth(),
+        h.getSex(),
+        generation,
+        entityToTreeDto(mother, horses, generation + 1),
+        entityToTreeDto(father, horses, generation + 1)
+    );
   }
 
 }

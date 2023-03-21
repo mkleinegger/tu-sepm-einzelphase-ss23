@@ -4,6 +4,7 @@ import at.ac.tuwien.sepm.assignment.individual.dto.HorseCreateDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepm.assignment.individual.dto.HorseTreeDto;
 import at.ac.tuwien.sepm.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepm.assignment.individual.exception.ValidationException;
@@ -63,4 +64,6 @@ public interface HorseService {
    * @throws NotFoundException if the horse with the given ID does not exist in the persistent data store
    */
   HorseDetailDto delete(long id) throws NotFoundException;
+
+  HorseTreeDto getGenerationsAsTree(long id, int limit) throws NotFoundException;
 }

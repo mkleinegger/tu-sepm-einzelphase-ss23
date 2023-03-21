@@ -4,6 +4,7 @@ import at.ac.tuwien.sepm.assignment.individual.dto.HorseCreateDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepm.assignment.individual.dto.HorseTreeDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.OwnerDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.ConflictException;
@@ -96,6 +97,14 @@ public class HorseServiceImpl implements HorseService {
     return mapper.entityToDetailDto(horse,
         ownerMapForSingleId(horse.getOwnerId()),
         horseMapForIds(horse.getMotherId(), horse.getFatherId()));
+  }
+
+  @Override
+  public HorseTreeDto getGenerationsAsTree(long id, int limit) throws NotFoundException {
+    LOG.trace("delete({}{})", id, limit);
+    var horses = dao.getGenerationsAsTree(id, limit);
+    return mapper.entityToTreeDto(horses.stream().filter(horse -> horse.getId() == id).findFirst().get(), horses, 1);
+    // return horses.stream().map(horse -> mapper.entityToTreeDto(horse));
   }
 
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {

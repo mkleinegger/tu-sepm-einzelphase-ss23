@@ -69,4 +69,7 @@ public interface HorseDao {
    * @return a stream containing owners matching the criteria in {@code searchParameters}
    */
   Collection<Horse> search(HorseSearchDto searchParameters);
+
+  Collection<Horse> getGenerationsAsTree(long id, long limit);
+
 }
