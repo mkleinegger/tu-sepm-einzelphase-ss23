@@ -4,7 +4,8 @@ import {HorseCreateEditComponent, HorseCreateEditMode} from './component/horse/h
 import {HorseComponent} from './component/horse/horse.component';
 import {OwnerComponent} from './component/owner/owner.component';
 import {HorseDetailComponent} from './component/horse/horse-detail/horse-detail.component';
-import { OwnerAddComponent } from './component/owner/owner-add/owner-add.component';
+import {OwnerAddComponent} from './component/owner/owner-add/owner-add.component';
+import {GenerationsViewComponent} from './component/horse/generations-view/generations-view.component';
 
 
 const routes: Routes = [
@@ -15,6 +16,7 @@ const routes: Routes = [
   ]},    
   {path: 'horses', children: [
     {path: '', component: HorseComponent},    
+    {path: 'generations/:id', component: GenerationsViewComponent},
     {path: 'detail/:id', component: HorseDetailComponent},
     {path: 'edit/:id', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.edit}},
     {path: 'create', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.create}},

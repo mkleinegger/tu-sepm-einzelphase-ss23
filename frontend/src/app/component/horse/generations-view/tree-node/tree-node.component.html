@@ -1,0 +1,32 @@
+<details *ngIf="horse">
+    <summary class="d-flex flex-row">
+        {{horse.name}} 
+        <i *ngIf="horse.sex === 'MALE'" class="bi bi-gender-male"></i>
+        <i *ngIf="horse.sex === 'FEMALE'" class="bi bi-gender-female"></i>
+        <!--span class="float-end"-->  
+            <span class="flex-grow-1"></span>
+            {{horse.dateOfBirth}}
+            <div class="btn-group">
+                <a class="btn btn-sm responsive-info-button"
+                   [routerLink]="['/horses/detail', horse.id]"
+                   aria-label="Show horse details">
+                    <i class="bi bi-info-lg"></i>
+                </a>
+                <a class="btn btn-sm responsive-danger-button"
+                   aria-label="Delete horse"
+                   (click)="deleteHorse(horse)">
+                    <i class="bi bi-trash"></i>
+                </a>
+                <a class="btn btn-sm responsive-warning-button"
+                   [routerLink]="['/horses/edit', horse.id]"
+                   aria-label="Edit horse">
+                   <i class="bi bi-pencil"></i>
+                </a>
+            </div>
+        <!--/span-->
+    </summary>
+    <div>
+        <app-tree-node [horse]="horse.mother"  style="margin-left: 100px;"/>
+        <app-tree-node [horse]="horse.father"  style="margin-left: 100px;"/>
+    </div>
+</details>

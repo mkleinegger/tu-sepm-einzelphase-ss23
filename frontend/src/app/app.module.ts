@@ -12,9 +12,11 @@ import {AutocompleteComponent} from './component/autocomplete/autocomplete.compo
 import {HeaderComponent} from './component/header/header.component';
 import {HorseCreateEditComponent} from './component/horse/horse-create-edit/horse-create-edit.component';
 import {HorseComponent} from './component/horse/horse.component';
-import { HorseDetailComponent } from './component/horse/horse-detail/horse-detail.component';
-import { OwnerComponent } from './component/owner/owner.component';
-import { OwnerAddComponent } from './component/owner/owner-add/owner-add.component';
+import {HorseDetailComponent} from './component/horse/horse-detail/horse-detail.component';
+import {OwnerComponent} from './component/owner/owner.component';
+import {OwnerAddComponent} from './component/owner/owner-add/owner-add.component';
+import {GenerationsViewComponent} from './component/horse/generations-view/generations-view.component';
+import { TreeNodeComponent } from './component/horse/generations-view/tree-node/tree-node.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +28,8 @@ import { OwnerAddComponent } from './component/owner/owner-add/owner-add.compone
     HorseDetailComponent,
     OwnerComponent,
     OwnerAddComponent,
+    GenerationsViewComponent,
+    TreeNodeComponent,
   ],
   imports: [
     BrowserModule,

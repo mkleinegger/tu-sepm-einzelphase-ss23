@@ -58,7 +58,7 @@ export class HorseDetailComponent {
 
   public deleteHorse(horse: Horse | null | undefined) {
     if( horse != null) {
-       const observable: Observable<Horse> = this.service.delete(horse);
+       const observable: Observable<Horse> = this.service.delete(horse.id?.toString());
        observable.subscribe({
          next: data => {
            this.notification.success(`Horse ${horse.name} successfully deleted`);

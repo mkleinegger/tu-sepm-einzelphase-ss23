@@ -2,7 +2,7 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from 'src/environments/environment';
-import {Horse, HorseSearch} from '../dto/horse';
+import {Horse, HorseSearch, HorseTree} from '../dto/horse';
 
 const baseUri = environment.backendUrl + '/horses';
 
@@ -48,6 +48,13 @@ export class HorseService {
     return this.http.get<Horse[]>(baseUri, { params });
   }
 
+  public getGenerationById(id: string | undefined, limit: number): Observable<HorseTree> {
+    const params = new HttpParams()
+      .set('limit', limit);
+
+    return this.http.get<HorseTree>(`${baseUri}/${id}/generations`, { params });
+  }
+
   /**
    * Get horse with specified id
    *
@@ -90,9 +97,9 @@ export class HorseService {
    * @param horse the data for the horse that should be deleted
    * @return an Observable for the deleted horse
    */
-  delete(horse: Horse): Observable<Horse> {
+  delete(id: string | undefined ): Observable<Horse> {
     return this.http.delete<Horse>(
-      `${baseUri}/${horse.id}`
+      `${baseUri}/${id}`
     );
   }
 
