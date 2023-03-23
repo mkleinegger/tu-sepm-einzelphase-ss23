@@ -5,9 +5,11 @@ import at.ac.tuwien.sepm.assignment.individual.dto.OwnerSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Owner;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
+import at.ac.tuwien.sepm.assignment.individual.exception.PersistenceException;
 import at.ac.tuwien.sepm.assignment.individual.persistence.OwnerDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -45,10 +47,18 @@ public class OwnerJdbcDao implements OwnerDao {
   @Override
   public Owner getById(long id) throws NotFoundException {
     LOG.trace("getById({})", id);
-    List<Owner> owners = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
+
+    List<Owner> owners;
+    try {
+      owners = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
+
     if (owners.isEmpty()) {
       throw new NotFoundException("Owner with ID %d not found".formatted(id));
     }
+
     if (owners.size() > 1) {
       // If this happens, something is wrong with either the DB or the select
       throw new FatalException("Found more than one owner with ID %d".formatted(id));
@@ -79,29 +89,40 @@ public class OwnerJdbcDao implements OwnerDao {
         .setId(key.longValue())
         .setFirstName(newOwner.firstName())
         .setLastName(newOwner.lastName())
-        .setEmail(newOwner.email())
-        ;
+        .setEmail(newOwner.email());
   }
 
   @Override
   public Collection<Owner> getAllById(Collection<Long> ids) {
     LOG.trace("getAllById({})", ids);
+
     var statementParams = Collections.singletonMap("ids", ids);
-    return jdbcNamed.query(SQL_SELECT_ALL, statementParams, this::mapRow);
+    try {
+      return jdbcNamed.query(SQL_SELECT_ALL, statementParams, this::mapRow);
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
   }
 
   @Override
   public Collection<Owner> search(OwnerSearchDto searchParameters) {
     LOG.trace("search({})", searchParameters);
+
     var query = SQL_SELECT_SEARCH;
     var params = new ArrayList<>();
     params.add(searchParameters.name());
+
     var maxAmount = searchParameters.maxAmount();
     if (maxAmount != null) {
       query += SQL_SELECT_SEARCH_LIMIT_CLAUSE;
       params.add(maxAmount);
     }
-    return jdbcTemplate.query(query, this::mapRow, params.toArray());
+
+    try {
+      return jdbcTemplate.query(query, this::mapRow, params.toArray());
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
   }
 
   private Owner mapRow(ResultSet resultSet, int i) throws SQLException {
@@ -109,7 +130,6 @@ public class OwnerJdbcDao implements OwnerDao {
         .setId(resultSet.getLong("id"))
         .setFirstName(resultSet.getString("first_name"))
         .setLastName(resultSet.getString("last_name"))
-        .setEmail(resultSet.getString("email"))
-        ;
+        .setEmail(resultSet.getString("email"));
   }
 }

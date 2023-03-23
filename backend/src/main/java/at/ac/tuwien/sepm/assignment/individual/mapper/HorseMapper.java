@@ -111,14 +111,14 @@ public class HorseMapper {
   }
 
   public HorseTreeDto entityToTreeDto(Horse h, Collection<Horse> horses, int generation) {
-    LOG.trace("entityToDto({})", horses);
+    LOG.trace("entityToTreeDto({})", horses);
+
     if (horses == null || h == null) {
       return null;
     }
 
     var mother = (h.getMotherId() == null) ? null : horses.stream().filter(horse -> horse.getId() == h.getMotherId()).findFirst().get();
     var father = (h.getFatherId() == null) ? null : horses.stream().filter(horse -> horse.getId() == h.getFatherId()).findFirst().get();
-
 
     return new HorseTreeDto(
         h.getId(),
@@ -130,5 +130,4 @@ public class HorseMapper {
         entityToTreeDto(father, horses, generation + 1)
     );
   }
-
 }

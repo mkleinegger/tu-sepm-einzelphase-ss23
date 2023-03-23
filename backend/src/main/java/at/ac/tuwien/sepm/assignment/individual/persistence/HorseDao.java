@@ -53,9 +53,8 @@ public interface HorseDao {
    * Deletes the horse, with the given ID, from the persistent data store.
    *
    * @param id the ID of the horse to get
-   * @return the deleted horse
    */
-  Horse delete(long id) throws NotFoundException;
+  void delete(long id) throws NotFoundException;
 
   /**
    * Search for owners matching the criteria in {@code searchParameters}.
@@ -70,6 +69,6 @@ public interface HorseDao {
    */
   Collection<Horse> search(HorseSearchDto searchParameters);
 
-  Collection<Horse> getGenerationsAsTree(long id, long limit);
+  Collection<Horse> getGenerationsAsTree(long id, long limit) throws NotFoundException;
 
 }

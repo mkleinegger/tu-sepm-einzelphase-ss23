@@ -6,15 +6,18 @@ import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
+import at.ac.tuwien.sepm.assignment.individual.exception.PersistenceException;
 import at.ac.tuwien.sepm.assignment.individual.persistence.HorseDao;
 import at.ac.tuwien.sepm.assignment.individual.type.Sex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.lang.invoke.MethodHandles;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,35 +32,28 @@ public class HorseJdbcDao implements HorseDao {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String TABLE_NAME = "horse";
+  private static final String TABLE_NAME_OWNER = "owner";
   private static final String SQL_SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
+  private static final String SQL_SELECT_SEARCH = "SELECT h.* FROM " + TABLE_NAME + " h"
+      + " LEFT JOIN " + TABLE_NAME_OWNER + " o ON o.id = h.owner_id"
+      + " WHERE (? IS NULL OR UPPER(h.name) like UPPER('%'||COALESCE(?, '')||'%'))"
+      + " AND (? IS NULL OR UPPER(h.description) like UPPER('%'||COALESCE(?, '')||'%'))"
+      + " AND (? IS NULL OR h.date_of_birth > ?)"
+      + " AND (? IS NULL OR h.sex = ?)"
+      + " AND (? IS NULL OR UPPER(o.first_name ||' '|| o.last_name) like UPPER('%'||COALESCE(?, '')||'%'))";
+  private static final String SQL_SELECT_SEARCH_LIMIT_CLAUSE = " LIMIT ?";
+  private static final String SQL_SELECT_GENERATION =
+      "WITH RECURSIVE ancestor(id, name, description, date_of_birth, sex, owner_id, mother_id, father_id, generation) AS ("
+          + " SELECT *, 1 as generation FROM horse where Id = ? UNION ALL SELECT horse.*, (ancestor.generation + 1) FROM horse, ancestor"
+          + " WHERE (ancestor.mother_id = horse.id OR ancestor.father_id = horse.id) AND ancestor.generation < ?) SELECT * FROM ancestor";
+
   private static final String SQL_SELECT_BY_ID = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
   private static final String SQL_CREATE =
       "INSERT INTO " + TABLE_NAME + " (name, description, date_of_birth, sex, owner_id, mother_id, father_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-  private static final String SQL_UPDATE = "UPDATE " + TABLE_NAME
-      + " SET name = ?"
-      + "  , description = ?"
-      + "  , date_of_birth = ?"
-      + "  , sex = ?"
-      + "  , owner_id = ?"
-      + "  , mother_id = ?"
-      + "  , father_id = ?"
-      + " WHERE id = ?";
-
+  private static final String SQL_UPDATE =
+      "UPDATE " + TABLE_NAME + " SET name = ? , description = ?, date_of_birth = ?, sex = ?, owner_id = ?, mother_id = ?"
+          + "  , father_id = ? WHERE id = ?";
   private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
-  private static final String SQL_SELECT_WHERE = " WHERE UPPER(name) like UPPER('%'||COALESCE(?, '')||'%')";
-  private static final String SQL_SELECT_SEARCH_DESCRIPTION_CLAUSE = " AND UPPER(description) like UPPER('%'||COALESCE(?, '')||'%')";
-  private static final String SQL_SELECT_SEARCH_DATE_CLAUSE = " AND date_of_birth > ?";
-  private static final String SQL_SELECT_SEARCH_SEX_CLAUSE = " AND UPPER(sex) like UPPER(COALESCE(?, '%')) ";
-  private static final String SQL_SELECT_SEARCH_OWNER_CLAUSE = " AND date > ?";
-  private static final String SQL_SELECT_SEARCH_LIMIT_CLAUSE = " LIMIT ?";
-  private static final String SQL_SELECT_GENERATION = ""
-      + "WITH RECURSIVE ancestor(id, name, description, date_of_birth, sex, owner_id, mother_id, father_id, generation) AS ("
-      + " SELECT *, 1 as generation FROM horse where Id = ?"
-      + " UNION ALL "
-      + " SELECT horse.*, (ancestor.generation + 1) FROM horse, ancestor"
-      + " WHERE (ancestor.mother_id = horse.id OR ancestor.father_id = horse.id) AND ancestor.generation < ?) SELECT * FROM ancestor";
-
-
   private final JdbcTemplate jdbcTemplate;
 
   public HorseJdbcDao(JdbcTemplate jdbcTemplate) {
@@ -67,18 +63,30 @@ public class HorseJdbcDao implements HorseDao {
   @Override
   public List<Horse> getAll() {
     LOG.trace("getAll()");
-    return jdbcTemplate.query(SQL_SELECT_ALL, this::mapRow);
+
+    try {
+      return jdbcTemplate.query(SQL_SELECT_ALL, this::mapRow);
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
   }
 
   @Override
   public Horse getById(long id) throws NotFoundException {
     LOG.trace("getById({})", id);
     List<Horse> horses;
-    horses = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
+
+    try {
+      horses = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
+    } catch (DataAccessException e) {
+      LOG.error(e.getMessage(), e);
+      throw new PersistenceException(e);
+    }
 
     if (horses.isEmpty()) {
       throw new NotFoundException("No horse with ID %d found".formatted(id));
     }
+
     if (horses.size() > 1) {
       // This should never happen!!
       throw new FatalException("Too many horses with ID %d found".formatted(id));
@@ -90,18 +98,23 @@ public class HorseJdbcDao implements HorseDao {
   @Override
   public Horse update(HorseDetailDto horse) throws NotFoundException {
     LOG.trace("update({})", horse);
-    int updated = jdbcTemplate.update(SQL_UPDATE,
-        horse.name(),
-        horse.description(),
-        horse.dateOfBirth(),
-        horse.sex().toString(),
-        horse.ownerId(),
-        horse.motherId(),
-        horse.fatherId(),
-        horse.id());
+    int updated = 0;
+    try {
+      updated = jdbcTemplate.update(SQL_UPDATE,
+          horse.name(),
+          horse.description(),
+          horse.dateOfBirth(),
+          horse.sex().toString(),
+          horse.ownerId(),
+          horse.motherId(),
+          horse.fatherId(),
+          horse.id());
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
 
     if (updated == 0) {
-      throw new NotFoundException("Could not update horse with ID " + horse.id() + ", because it does not exist");
+      throw new NotFoundException("Could not update horse with ID %d, because it does not exist".formatted(horse.id()));
     }
 
     return new Horse()
@@ -118,32 +131,39 @@ public class HorseJdbcDao implements HorseDao {
   @Override
   public Horse create(HorseCreateDto newHorse) {
     LOG.trace("create({})", newHorse);
-
     GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-    jdbcTemplate.update(con -> {
-      PreparedStatement stmt = con.prepareStatement(SQL_CREATE, Statement.RETURN_GENERATED_KEYS);
-      stmt.setString(1, newHorse.name());
-      stmt.setString(2, newHorse.description());
-      stmt.setString(3, String.valueOf(newHorse.dateOfBirth()));
-      stmt.setString(4, newHorse.sex().toString());
-      if (newHorse.ownerId() != null) {
-        stmt.setLong(5, newHorse.ownerId());
-      } else {
-        stmt.setNull(5, Types.BIGINT);
-      }
-      if (newHorse.motherId() != null) {
-        stmt.setLong(6, newHorse.motherId());
-      } else {
-        stmt.setNull(6, Types.BIGINT);
-      }
-      if (newHorse.fatherId() != null) {
-        stmt.setLong(7, newHorse.fatherId());
-      } else {
-        stmt.setNull(7, Types.BIGINT);
-      }
 
-      return stmt;
-    }, keyHolder);
+    try {
+      jdbcTemplate.update(con -> {
+        PreparedStatement stmt = con.prepareStatement(SQL_CREATE, Statement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, newHorse.name());
+        stmt.setString(2, newHorse.description());
+        stmt.setDate(3, Date.valueOf(newHorse.dateOfBirth()));
+        stmt.setString(4, newHorse.sex().toString());
+
+        if (newHorse.ownerId() != null) {
+          stmt.setLong(5, newHorse.ownerId());
+        } else {
+          stmt.setNull(5, Types.BIGINT);
+        }
+
+        if (newHorse.motherId() != null) {
+          stmt.setLong(6, newHorse.motherId());
+        } else {
+          stmt.setNull(6, Types.BIGINT);
+        }
+
+        if (newHorse.fatherId() != null) {
+          stmt.setLong(7, newHorse.fatherId());
+        } else {
+          stmt.setNull(7, Types.BIGINT);
+        }
+
+        return stmt;
+      }, keyHolder);
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
 
     Number key = keyHolder.getKey();
     if (key == null) {
@@ -159,69 +179,72 @@ public class HorseJdbcDao implements HorseDao {
         .setSex(newHorse.sex())
         .setOwnerId(newHorse.ownerId())
         .setMotherId(newHorse.motherId())
-        .setFatherId(newHorse.fatherId())
-        ;
+        .setFatherId(newHorse.fatherId());
   }
 
   @Override
-  public Horse delete(long id) throws NotFoundException {
-    Horse deletedHorse = getById(id);
-    int affectedRows = jdbcTemplate.update(connection -> {
-      PreparedStatement stmt = connection.prepareStatement(SQL_DELETE, Statement.RETURN_GENERATED_KEYS);
-      stmt.setLong(1, id);
-      return stmt;
-    });
+  public void delete(long id) throws NotFoundException {
+    LOG.trace("delete({})", id);
 
-    if (affectedRows == 0) {
+    int deleted = 0;
+    try {
+      deleted = jdbcTemplate.update(SQL_DELETE, id);
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
+
+    if (deleted == 0) {
       throw new NotFoundException("No horse with ID %d deleted".formatted(id));
     }
-    return deletedHorse;
   }
 
   @Override
   public Collection<Horse> search(HorseSearchDto searchParameters) {
     LOG.trace("search({})", searchParameters);
-    var query = SQL_SELECT_ALL;
+
+    var query = SQL_SELECT_SEARCH;
     var params = new ArrayList<>();
+    params.add(searchParameters.name());
+    params.add(searchParameters.name());
+    params.add(searchParameters.description());
+    params.add(searchParameters.description());
+    params.add(searchParameters.bornBefore());
+    params.add(searchParameters.bornBefore());
+    params.add(searchParameters.sex());
+    params.add(searchParameters.sex());
+    params.add(searchParameters.ownerName());
+    params.add(searchParameters.ownerName());
 
-    if (searchParameters != null) {
-      query += SQL_SELECT_WHERE;
-      params.add(searchParameters.name());
-
-      //name
-      var description = searchParameters.description();
-      if (description != null) {
-        query += SQL_SELECT_SEARCH_DESCRIPTION_CLAUSE;
-        params.add(description);
-      }
-
-      var bornBefore = searchParameters.bornBefore();
-      if (bornBefore != null) {
-        query += SQL_SELECT_SEARCH_DATE_CLAUSE;
-        params.add(bornBefore);
-      }
-
-      var sex = searchParameters.sex();
-      if (sex != null) {
-        query += SQL_SELECT_SEARCH_SEX_CLAUSE;
-        params.add(sex.toString());
-      }
-
-      // limit
-      var maxAmount = searchParameters.limit();
-      if (maxAmount != null) {
-        query += SQL_SELECT_SEARCH_LIMIT_CLAUSE;
-        params.add(maxAmount);
-      }
+    // limit
+    var maxAmount = searchParameters.limit();
+    if (maxAmount != null) {
+      query += SQL_SELECT_SEARCH_LIMIT_CLAUSE;
+      params.add(maxAmount);
     }
-    return jdbcTemplate.query(query, this::mapRow, params.toArray());
+
+    try {
+      return jdbcTemplate.query(query, this::mapRow, params.toArray());
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
   }
 
   @Override
-  public Collection<Horse> getGenerationsAsTree(long id, long limit) {
+  public Collection<Horse> getGenerationsAsTree(long id, long limit) throws NotFoundException {
     LOG.trace("getGenerationsAsTree({}, {})", id, limit);
 
-    return jdbcTemplate.query(SQL_SELECT_GENERATION, this::mapRow, id, limit);
+    List<Horse> horses;
+    try {
+      horses = jdbcTemplate.query(SQL_SELECT_GENERATION, this::mapRow, id, limit);
+    } catch (DataAccessException e) {
+      throw new PersistenceException(e);
+    }
+
+    if (horses.isEmpty()) {
+      throw new NotFoundException("Could not return family-tree for horse with ID %d, because it does not exist".formatted(id));
+    }
+
+    return horses;
   }
 
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {

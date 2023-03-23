@@ -44,9 +44,15 @@ public class HorseServiceImpl implements HorseService {
 
   @Override
   public Stream<HorseListDto> allHorses(HorseSearchDto searchParameters) {
-    LOG.trace("allHorses()");
+    LOG.trace("allHorses({})", searchParameters);
+
     var horses = dao.search(searchParameters);
-    var ownerIds = horses.stream().map(Horse::getOwnerId).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
+    var ownerIds = horses
+        .stream()
+        .map(Horse::getOwnerId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toUnmodifiableSet());
+
     Map<Long, OwnerDto> ownerMap;
 
     try {
@@ -62,9 +68,9 @@ public class HorseServiceImpl implements HorseService {
   @Override
   public HorseDetailDto update(HorseDetailDto horse) throws NotFoundException, ValidationException, ConflictException {
     LOG.trace("update({})", horse);
+
     validator.validateForUpdate(horse);
     var updatedHorse = dao.update(horse);
-
     return mapper.entityToDetailDto(updatedHorse,
         ownerMapForSingleId(updatedHorse.getOwnerId()),
         horseMapForIds(updatedHorse.getMotherId(), updatedHorse.getFatherId()));
@@ -74,6 +80,7 @@ public class HorseServiceImpl implements HorseService {
   @Override
   public HorseDetailDto getById(long id) throws NotFoundException {
     LOG.trace("details({})", id);
+
     Horse horse = dao.getById(id);
     return mapper.entityToDetailDto(horse,
         ownerMapForSingleId(horse.getOwnerId()),
@@ -91,20 +98,19 @@ public class HorseServiceImpl implements HorseService {
   }
 
   @Override
-  public HorseDetailDto delete(long id) throws NotFoundException {
+  public void delete(long id) throws NotFoundException {
     LOG.trace("delete({})", id);
-    Horse horse = dao.delete(id);
-    return mapper.entityToDetailDto(horse,
-        ownerMapForSingleId(horse.getOwnerId()),
-        horseMapForIds(horse.getMotherId(), horse.getFatherId()));
+
+    dao.delete(id);
   }
 
   @Override
   public HorseTreeDto getGenerationsAsTree(long id, int limit) throws NotFoundException {
     LOG.trace("delete({}{})", id, limit);
+
     var horses = dao.getGenerationsAsTree(id, limit);
-    return mapper.entityToTreeDto(horses.stream().filter(horse -> horse.getId() == id).findFirst().get(), horses, 1);
-    // return horses.stream().map(horse -> mapper.entityToTreeDto(horse));
+    return mapper.entityToTreeDto(horses.stream().filter(horse -> horse.getId() == id)
+        .findFirst().get(), horses, 1);
   }
 
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {
@@ -135,5 +141,4 @@ public class HorseServiceImpl implements HorseService {
       throw new FatalException("Owner %d referenced by horse not found".formatted(ids));
     }
   }
-
 }

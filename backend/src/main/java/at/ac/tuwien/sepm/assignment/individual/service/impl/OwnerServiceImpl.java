@@ -8,6 +8,9 @@ import at.ac.tuwien.sepm.assignment.individual.exception.ValidationException;
 import at.ac.tuwien.sepm.assignment.individual.mapper.OwnerMapper;
 import at.ac.tuwien.sepm.assignment.individual.persistence.OwnerDao;
 import at.ac.tuwien.sepm.assignment.individual.service.OwnerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
@@ -15,10 +18,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 @Service
 public class OwnerServiceImpl implements OwnerService {
@@ -35,12 +34,14 @@ public class OwnerServiceImpl implements OwnerService {
   @Override
   public OwnerDto getById(long id) throws NotFoundException {
     LOG.trace("getById({})", id);
+
     return mapper.entityToDto(dao.getById(id));
   }
 
   @Override
   public Map<Long, OwnerDto> getAllById(Collection<Long> ids) throws NotFoundException {
     LOG.trace("getAllById({})", ids);
+
     Map<Long, OwnerDto> owners = dao.getAllById(ids).stream().map(mapper::entityToDto).collect(Collectors.toUnmodifiableMap(OwnerDto::id, Function.identity()));
     for (final var id : ids) {
       if (!owners.containsKey(id)) {
@@ -53,6 +54,7 @@ public class OwnerServiceImpl implements OwnerService {
   @Override
   public Stream<OwnerDto> search(OwnerSearchDto searchParameters) {
     LOG.trace("search({})", searchParameters);
+
     return dao.search(searchParameters).stream().map(mapper::entityToDto);
   }
 

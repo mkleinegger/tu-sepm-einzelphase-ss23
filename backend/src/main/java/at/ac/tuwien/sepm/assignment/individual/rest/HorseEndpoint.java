@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 public class HorseEndpoint {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   static final String BASE_PATH = "/horses";
-
   private final HorseService service;
 
   public HorseEndpoint(HorseService service) {
@@ -41,14 +40,15 @@ public class HorseEndpoint {
   @GetMapping
   public Stream<HorseListDto> searchHorses(HorseSearchDto searchParameters) {
     LOG.info("GET " + BASE_PATH);
-    LOG.info("request parameters: {}", searchParameters);
-    // TODO We have the request params in the DTO now, but don't do anything with them yet…
-    return service.allHorses(searchParameters);
+    LOG.debug("request parameters: {}", searchParameters);
+
+    return service.allHorses(searchParameters); //check persistence exception?
   }
 
   @GetMapping("{id}")
   public HorseDetailDto getById(@PathVariable long id) {
     LOG.info("GET " + BASE_PATH + "/{}", id);
+
     try {
       return service.getById(id);
     } catch (NotFoundException e) {
@@ -72,13 +72,22 @@ public class HorseEndpoint {
 
   @PutMapping("{id}")
   public HorseDetailDto update(@PathVariable long id, @RequestBody HorseDetailDto toUpdate) throws ValidationException, ConflictException {
-    LOG.info("PUT " + BASE_PATH + "/{}", toUpdate);
+    LOG.info("PUT " + BASE_PATH + "/{}", id);
     LOG.debug("Body of request:\n{}", toUpdate);
+
     try {
       return service.update(toUpdate.withId(id));
     } catch (NotFoundException e) {
       HttpStatus status = HttpStatus.NOT_FOUND;
       logClientError(status, "Horse to update not found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    } catch (ValidationException e) {
+      HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+      logClientError(HttpStatus.UNPROCESSABLE_ENTITY, "Horse to update is not valid found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    } catch (ConflictException e) {
+      HttpStatus status = HttpStatus.CONFLICT;
+      logClientError(status, "Horse to update contains conflicts with other data", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }
@@ -89,13 +98,31 @@ public class HorseEndpoint {
     LOG.info("POST " + BASE_PATH);
     LOG.debug("Body of request:\n{}", toCreate);
 
-    return service.create(toCreate);
+    try {
+      return service.create(toCreate);
+    } catch (ValidationException e) {
+      HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+      logClientError(HttpStatus.UNPROCESSABLE_ENTITY, "Horse to create is not valid found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    } catch (ConflictException e) {
+      HttpStatus status = HttpStatus.CONFLICT;
+      logClientError(status, "Horse to update contains conflicts with other data", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    }
   }
 
   @DeleteMapping("{id}")
-  public HorseDetailDto delete(@PathVariable long id) throws NotFoundException {
+  @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "NO_CONTENT")
+  public void delete(@PathVariable long id) throws NotFoundException {
     LOG.info("DELETE " + BASE_PATH + "/{}", id);
-    return service.delete(id);
+
+    try {
+      service.delete(id);
+    } catch (NotFoundException e) {
+      HttpStatus status = HttpStatus.NOT_FOUND;
+      logClientError(status, "Horse to update not found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    }
   }
 
   private void logClientError(HttpStatus status, String message, Exception e) {
