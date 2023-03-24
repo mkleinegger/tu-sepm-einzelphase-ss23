@@ -71,4 +71,5 @@ public interface HorseDao {
 
   Collection<Horse> getGenerationsAsTree(long id, long limit) throws NotFoundException;
 
+  Collection<Horse> getChildren(long id);
 }
