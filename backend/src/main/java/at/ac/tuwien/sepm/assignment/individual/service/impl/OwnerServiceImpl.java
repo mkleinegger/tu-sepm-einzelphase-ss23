@@ -10,7 +10,9 @@ import at.ac.tuwien.sepm.assignment.individual.persistence.OwnerDao;
 import at.ac.tuwien.sepm.assignment.individual.service.OwnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
@@ -25,10 +27,12 @@ public class OwnerServiceImpl implements OwnerService {
 
   private final OwnerDao dao;
   private final OwnerMapper mapper;
+  private final OwnerValidator validator;
 
-  public OwnerServiceImpl(OwnerDao dao, OwnerMapper mapper) {
+  public OwnerServiceImpl(OwnerDao dao, OwnerMapper mapper, OwnerValidator validator) {
     this.dao = dao;
     this.mapper = mapper;
+    this.validator = validator;
   }
 
   @Override
@@ -42,7 +46,11 @@ public class OwnerServiceImpl implements OwnerService {
   public Map<Long, OwnerDto> getAllById(Collection<Long> ids) throws NotFoundException {
     LOG.trace("getAllById({})", ids);
 
-    Map<Long, OwnerDto> owners = dao.getAllById(ids).stream().map(mapper::entityToDto).collect(Collectors.toUnmodifiableMap(OwnerDto::id, Function.identity()));
+    Map<Long, OwnerDto> owners = dao.getAllById(ids)
+        .stream()
+        .map(mapper::entityToDto)
+        .collect(Collectors.toUnmodifiableMap(OwnerDto::id, Function.identity()));
+
     for (final var id : ids) {
       if (!owners.containsKey(id)) {
         throw new NotFoundException("Owner with ID %d not found".formatted(id));
@@ -59,9 +67,11 @@ public class OwnerServiceImpl implements OwnerService {
   }
 
   @Override
+  @ResponseStatus(code = HttpStatus.CREATED, reason = "CREATED")
   public OwnerDto create(OwnerCreateDto newOwner) throws ValidationException {
     LOG.trace("create({})", newOwner);
-    // TODO validation
+
+    validator.validateForCreate(newOwner);
     return mapper.entityToDto(dao.create(newOwner));
   }
 }
