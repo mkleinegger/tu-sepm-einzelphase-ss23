@@ -33,9 +33,9 @@ public class HorseValidator {
 
   public void validateForUpdate(HorseDetailDto horse) throws ValidationException, ConflictException, NotFoundException {
     LOG.trace("validateForUpdate({})", horse);
-    List<String> validationErrors = new ArrayList<>();
 
     // validation errors
+    List<String> validationErrors = new ArrayList<>();
     if (horse.id() == null) {
       validationErrors.add("No ID given");
     }
@@ -43,16 +43,15 @@ public class HorseValidator {
     validateDescription(validationErrors, horse.description());
     validateDateOfBirth(validationErrors, horse.dateOfBirth());
     validateSex(validationErrors, horse.sex());
-    // TODO: wann die exceptions werfen
+
     if (!validationErrors.isEmpty()) {
       throw new ValidationException("Validation of horse for update failed", validationErrors);
     }
 
     // conflict errors
     List<String> conflictErrors = new ArrayList<>();
-
     validateOwner(conflictErrors, horse.ownerId());
-    if (horse.id() != null && (horse.id() == horse.motherId() || horse.id() == horse.fatherId())) {
+    if (horse.id() != null && (horse.id().equals(horse.motherId()) || horse.id().equals(horse.fatherId()))) {
       conflictErrors.add("The horse cannot be its own parent");
     }
     validateDifferentParents(conflictErrors, horse.motherId(), horse.fatherId());
@@ -78,7 +77,7 @@ public class HorseValidator {
     }
 
     if (!conflictErrors.isEmpty()) {
-      throw new ConflictException("Validation of horse for update failed", conflictErrors);
+      throw new ConflictException("Conflicts occurred when trying to update the horse ", conflictErrors);
     }
   }
 
@@ -87,7 +86,6 @@ public class HorseValidator {
 
     // validation errors
     List<String> validationErrors = new ArrayList<>();
-
     validateName(validationErrors, newHorse.name());
     validateDescription(validationErrors, newHorse.description());
     validateDateOfBirth(validationErrors, newHorse.dateOfBirth());
@@ -98,21 +96,27 @@ public class HorseValidator {
 
     // conflict errors
     List<String> conflictErrors = new ArrayList<>();
-
     validateOwner(conflictErrors, newHorse.ownerId());
     validateDifferentParents(conflictErrors, newHorse.motherId(), newHorse.fatherId());
     validateParent(conflictErrors, newHorse.motherId(), Sex.FEMALE, newHorse.dateOfBirth());
     validateParent(conflictErrors, newHorse.fatherId(), Sex.MALE, newHorse.dateOfBirth());
 
     if (!conflictErrors.isEmpty()) {
-      throw new ConflictException("Validation of horse for create failed", conflictErrors);
+      throw new ConflictException("Conflicts occurred when trying to update the horse ", conflictErrors);
     }
   }
 
   private void validateName(List<String> errors, String name) {
     LOG.trace("validateName({}, {})", errors, name);
 
-    if (name == null || name.isBlank() || name.length() > 255) {
+    if (name != null) {
+      if (name.isBlank()) {
+        errors.add("Horse's name is given but blank");
+      }
+      if (name.length() > 255) {
+        errors.add("Horse's name too long: longer than 255 characters");
+      }
+    } else {
       errors.add("Horse needs a name");
     }
   }
@@ -161,7 +165,7 @@ public class HorseValidator {
   private void validateDifferentParents(List<String> errors, Long motherId, Long fatherId) {
     LOG.trace("validateDifferentParents({}, {}, {})", errors, motherId, fatherId);
 
-    if (motherId != null && fatherId != null && motherId == fatherId) {
+    if (motherId != null && motherId.equals(fatherId)) {
       errors.add("Mother and father cannot be the same horse");
     }
   }

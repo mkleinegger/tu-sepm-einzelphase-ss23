@@ -5,6 +5,7 @@ import at.ac.tuwien.sepm.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.HorseTreeDto;
+import at.ac.tuwien.sepm.assignment.individual.dto.HorseTreeParamsDto;
 import at.ac.tuwien.sepm.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepm.assignment.individual.exception.ValidationException;
@@ -42,7 +43,7 @@ public class HorseEndpoint {
     LOG.info("GET " + BASE_PATH);
     LOG.debug("request parameters: {}", searchParameters);
 
-    return service.allHorses(searchParameters); //check persistence exception?
+    return service.search(searchParameters);
   }
 
   @GetMapping("{id}")
@@ -58,14 +59,21 @@ public class HorseEndpoint {
     }
   }
 
-  @GetMapping("{id}/generations")
-  public HorseTreeDto getGenerationsFor(@PathVariable long id) {
+  @GetMapping("{id}/familytree")
+  public HorseTreeDto getFamilyTree(@PathVariable long id, HorseTreeParamsDto searchDto) throws ValidationException {
     LOG.info("GET " + BASE_PATH + "/{}/generations", id);
+    LOG.debug("query-params: {}", searchDto);
+
+    int numberOfGenerations = 3;  // default number of generations
+    if (searchDto.numberOfGenerations() != null) {
+      numberOfGenerations = searchDto.numberOfGenerations();
+    }
+
     try {
-      return service.getGenerationsAsTree(id, 3);
+      return service.getGenerationsAsTree(id, numberOfGenerations);
     } catch (NotFoundException e) {
       HttpStatus status = HttpStatus.NOT_FOUND;
-      logClientError(status, "Horse to get details of not found", e);
+      logClientError(status, "Horse to get family-tree of not found", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }
@@ -81,14 +89,6 @@ public class HorseEndpoint {
       HttpStatus status = HttpStatus.NOT_FOUND;
       logClientError(status, "Horse to update not found", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
-    } catch (ValidationException e) {
-      HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-      logClientError(HttpStatus.UNPROCESSABLE_ENTITY, "Horse to update is not valid found", e);
-      throw new ResponseStatusException(status, e.getMessage(), e);
-    } catch (ConflictException e) {
-      HttpStatus status = HttpStatus.CONFLICT;
-      logClientError(status, "Horse to update contains conflicts with other data", e);
-      throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }
 
@@ -98,29 +98,19 @@ public class HorseEndpoint {
     LOG.info("POST " + BASE_PATH);
     LOG.debug("Body of request:\n{}", toCreate);
 
-    try {
-      return service.create(toCreate);
-    } catch (ValidationException e) {
-      HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-      logClientError(HttpStatus.UNPROCESSABLE_ENTITY, "Horse to create is not valid found", e);
-      throw new ResponseStatusException(status, e.getMessage(), e);
-    } catch (ConflictException e) {
-      HttpStatus status = HttpStatus.CONFLICT;
-      logClientError(status, "Horse to update contains conflicts with other data", e);
-      throw new ResponseStatusException(status, e.getMessage(), e);
-    }
+    return service.create(toCreate);
   }
 
   @DeleteMapping("{id}")
   @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "NO_CONTENT")
-  public void delete(@PathVariable long id) throws NotFoundException {
+  public void delete(@PathVariable long id) {
     LOG.info("DELETE " + BASE_PATH + "/{}", id);
 
     try {
       service.delete(id);
     } catch (NotFoundException e) {
       HttpStatus status = HttpStatus.NOT_FOUND;
-      logClientError(status, "Horse to update not found", e);
+      logClientError(status, "Horse to delete not found", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -31,6 +31,7 @@ public class HorseMapper {
    */
   public HorseListDto entityToListDto(Horse horse, Map<Long, OwnerDto> owners) {
     LOG.trace("entityToDto({})", horse);
+
     if (horse == null) {
       return null;
     }
@@ -53,11 +54,9 @@ public class HorseMapper {
    * @param owners a map of horse owners by their id, which needs to contain the owner referenced by {@code horse}
    * @return the converted {@link HorseListDto}
    */
-  public HorseDetailDto entityToDetailDto(
-      Horse horse,
-      Map<Long, OwnerDto> owners,
-      Map<Long, HorseDetailDto> parents) {
+  public HorseDetailDto entityToDetailDto(Horse horse, Map<Long, OwnerDto> owners, Map<Long, HorseDetailDto> parents) {
     LOG.trace("entityToDto({})", horse);
+
     if (horse == null) {
       return null;
     }
@@ -69,8 +68,40 @@ public class HorseMapper {
         horse.getDateOfBirth(),
         horse.getSex(),
         getOwner(horse, owners),
-        getMother(horse, parents),
-        getFather(horse, parents)
+        getParent(horse.getMotherId(), parents),
+        getParent(horse.getFatherId(), parents)
+    );
+  }
+
+  /**
+   * Convert a horse entity object to a {@link HorseTreeDto}.
+   * The given map of horses needs to be initialized and if existing the mother/father of
+   * {@code horse}. The {@code generation} must be greater than 0.
+   *
+   * @param horse      the horse to convert
+   * @param horses     a map of horse parents by their id, which needs to contain the parents referenced by {@code horse}
+   * @param generation the current generation of the horse in this tree
+   * @return the converted {@link HorseTreeDto}
+   */
+  public HorseTreeDto entityToTreeDto(Horse horse, Map<Long, Horse> horses, int generation) {
+    LOG.trace("entityToTreeDto({})", horses);
+
+    if (horse == null) {
+      return null;
+    }
+
+    if (horses == null) {
+      horses = new HashMap<>();
+    }
+
+    return new HorseTreeDto(
+        horse.getId(),
+        horse.getName(),
+        horse.getDateOfBirth(),
+        horse.getSex(),
+        generation,
+        entityToTreeDto(horses.get(horse.getMotherId()), horses, generation + 1),
+        entityToTreeDto(horses.get(horse.getFatherId()), horses, generation + 1)
     );
   }
 
@@ -86,48 +117,16 @@ public class HorseMapper {
     return owner;
   }
 
-  private HorseDetailDto getFather(Horse horse, Map<Long, HorseDetailDto> parents) {
-    HorseDetailDto father = null;
-    var fatherId = horse.getFatherId();
-    if (fatherId != null && parents != null) {
-      if (!parents.containsKey(fatherId)) {
-        throw new FatalException("Given owner map does not contain owner of this Horse (%d)".formatted(horse.getId()));
+  private HorseDetailDto getParent(Long parentId, Map<Long, HorseDetailDto> parents) {
+    LOG.trace("getParent({}, {})", parentId, parents);
+
+    HorseDetailDto parent = null;
+    if (parentId != null) {
+      if (!parents.containsKey(parentId)) {
+        throw new FatalException("Given parent map does not contain parent (%d) of this Horse".formatted(parentId));
       }
-      father = parents.get(fatherId);
+      parent = parents.get(parentId);
     }
-    return father;
-  }
-
-  private HorseDetailDto getMother(Horse horse, Map<Long, HorseDetailDto> parents) {
-    HorseDetailDto mother = null;
-    var motherId = horse.getMotherId();
-    if (motherId != null && parents != null) {
-      if (!parents.containsKey(motherId)) {
-        throw new FatalException("Given owner map does not contain owner of this Horse (%d)".formatted(horse.getId()));
-      }
-      mother = parents.get(motherId);
-    }
-    return mother;
-  }
-
-  public HorseTreeDto entityToTreeDto(Horse h, Collection<Horse> horses, int generation) {
-    LOG.trace("entityToTreeDto({})", horses);
-
-    if (horses == null || h == null) {
-      return null;
-    }
-
-    var mother = (h.getMotherId() == null) ? null : horses.stream().filter(horse -> horse.getId() == h.getMotherId()).findFirst().get();
-    var father = (h.getFatherId() == null) ? null : horses.stream().filter(horse -> horse.getId() == h.getFatherId()).findFirst().get();
-
-    return new HorseTreeDto(
-        h.getId(),
-        h.getName(),
-        h.getDateOfBirth(),
-        h.getSex(),
-        generation,
-        entityToTreeDto(mother, horses, generation + 1),
-        entityToTreeDto(father, horses, generation + 1)
-    );
+    return parent;
   }
 }

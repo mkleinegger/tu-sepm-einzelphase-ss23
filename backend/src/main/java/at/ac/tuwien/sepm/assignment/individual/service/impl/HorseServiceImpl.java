@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +45,7 @@ public class HorseServiceImpl implements HorseService {
   }
 
   @Override
-  public Stream<HorseListDto> allHorses(HorseSearchDto searchParameters) {
+  public Stream<HorseListDto> search(HorseSearchDto searchParameters) {
     LOG.trace("allHorses({})", searchParameters);
 
     var horses = dao.search(searchParameters);
@@ -73,7 +75,7 @@ public class HorseServiceImpl implements HorseService {
     var updatedHorse = dao.update(horse);
     return mapper.entityToDetailDto(updatedHorse,
         ownerMapForSingleId(updatedHorse.getOwnerId()),
-        horseMapForIds(updatedHorse.getMotherId(), updatedHorse.getFatherId()));
+        horseMapForIds(Arrays.asList(updatedHorse.getMotherId(), updatedHorse.getFatherId())));
   }
 
 
@@ -84,7 +86,7 @@ public class HorseServiceImpl implements HorseService {
     Horse horse = dao.getById(id);
     return mapper.entityToDetailDto(horse,
         ownerMapForSingleId(horse.getOwnerId()),
-        horseMapForIds(horse.getMotherId(), horse.getFatherId()));
+        horseMapForIds(Arrays.asList(horse.getMotherId(), horse.getFatherId())));
   }
 
   @Override
@@ -94,7 +96,7 @@ public class HorseServiceImpl implements HorseService {
     validator.validateForCreate(newHorse);
     return mapper.entityToDetailDto(dao.create(newHorse),
         ownerMapForSingleId(newHorse.ownerId()),
-        horseMapForIds(newHorse.motherId(), newHorse.fatherId()));
+        horseMapForIds(Arrays.asList(newHorse.motherId(), newHorse.fatherId())));
   }
 
   @Override
@@ -105,12 +107,17 @@ public class HorseServiceImpl implements HorseService {
   }
 
   @Override
-  public HorseTreeDto getGenerationsAsTree(long id, int limit) throws NotFoundException {
-    LOG.trace("delete({}{})", id, limit);
+  public HorseTreeDto getGenerationsAsTree(long id, int numberOfGenerations) throws NotFoundException, ValidationException {
+    LOG.trace("getGenerationsAsTree({}{})", id, numberOfGenerations);
 
-    var horses = dao.getGenerationsAsTree(id, limit);
-    return mapper.entityToTreeDto(horses.stream().filter(horse -> horse.getId() == id)
-        .findFirst().get(), horses, 1);
+    if (numberOfGenerations < 1) {
+      throw new ValidationException("Cannot load family-tree for %d".formatted(id),
+          Collections.singletonList("Number of generation for family tree is not valid"));
+    }
+
+    var horse = dao.getById(id);  // to check if horse even existing
+    var horses = dao.getGenerationsAsTree(horse.getId(), numberOfGenerations);
+    return mapper.entityToTreeDto(horses.get(horse.getId()), horses, 1);
   }
 
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {
@@ -121,24 +128,19 @@ public class HorseServiceImpl implements HorseService {
     }
   }
 
-  private Map<Long, HorseDetailDto> horseMapForIds(Long... ids) {
+  private Map<Long, HorseDetailDto> horseMapForIds(Collection<Long> ids) {
     try {
-      if (ids.length == 0) {
-        return null;
-      }
-
       HashMap<Long, HorseDetailDto> result = new HashMap<>();
       for (Long id : ids) {
         if (id != null) {
-          Horse h = dao.getById(id);
-          result.put(id, mapper.entityToDetailDto(h,
-              ownerMapForSingleId(h.getOwnerId()), null));
+          // set owner, father and mother to null, because it should not be loaded
+          result.put(id, mapper.entityToDetailDto(dao.getById(id).setOwnerId(null).setFatherId(null).setMotherId(null), null, null));
         }
       }
 
       return result;
     } catch (NotFoundException e) {
-      throw new FatalException("Owner %d referenced by horse not found".formatted(ids));
+      throw new FatalException("Horse-Parents %s referenced by horse not found".formatted(Arrays.toString(ids.toArray())));
     }
   }
 }

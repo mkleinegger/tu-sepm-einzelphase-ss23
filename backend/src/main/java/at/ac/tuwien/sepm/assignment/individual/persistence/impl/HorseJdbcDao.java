@@ -6,12 +6,10 @@ import at.ac.tuwien.sepm.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
-import at.ac.tuwien.sepm.assignment.individual.exception.PersistenceException;
 import at.ac.tuwien.sepm.assignment.individual.persistence.HorseDao;
 import at.ac.tuwien.sepm.assignment.individual.type.Sex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -26,6 +24,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public class HorseJdbcDao implements HorseDao {
@@ -34,6 +35,7 @@ public class HorseJdbcDao implements HorseDao {
   private static final String TABLE_NAME = "horse";
   private static final String TABLE_NAME_OWNER = "owner";
   private static final String SQL_SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
+  private static final String SQL_SELECT_ALL_CHILDREN = "SELECT * FROM " + TABLE_NAME + " WHERE mother_id = ? OR father_id = ?";
   private static final String SQL_SELECT_SEARCH = "SELECT h.* FROM " + TABLE_NAME + " h"
       + " LEFT JOIN " + TABLE_NAME_OWNER + " o ON o.id = h.owner_id"
       + " WHERE (? IS NULL OR UPPER(h.name) like UPPER('%'||COALESCE(?, '')||'%'))"
@@ -64,24 +66,14 @@ public class HorseJdbcDao implements HorseDao {
   public List<Horse> getAll() {
     LOG.trace("getAll()");
 
-    try {
-      return jdbcTemplate.query(SQL_SELECT_ALL, this::mapRow);
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    return jdbcTemplate.query(SQL_SELECT_ALL, this::mapRow);
   }
 
   @Override
   public Horse getById(long id) throws NotFoundException {
     LOG.trace("getById({})", id);
-    List<Horse> horses;
 
-    try {
-      horses = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
-    } catch (DataAccessException e) {
-      LOG.error(e.getMessage(), e);
-      throw new PersistenceException(e);
-    }
+    List<Horse> horses = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
 
     if (horses.isEmpty()) {
       throw new NotFoundException("No horse with ID %d found".formatted(id));
@@ -98,20 +90,15 @@ public class HorseJdbcDao implements HorseDao {
   @Override
   public Horse update(HorseDetailDto horse) throws NotFoundException {
     LOG.trace("update({})", horse);
-    int updated = 0;
-    try {
-      updated = jdbcTemplate.update(SQL_UPDATE,
-          horse.name(),
-          horse.description(),
-          horse.dateOfBirth(),
-          horse.sex().toString(),
-          horse.ownerId(),
-          horse.motherId(),
-          horse.fatherId(),
-          horse.id());
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    int updated = jdbcTemplate.update(SQL_UPDATE,
+        horse.name(),
+        horse.description(),
+        horse.dateOfBirth(),
+        horse.sex().toString(),
+        horse.ownerId(),
+        horse.motherId(),
+        horse.fatherId(),
+        horse.id());
 
     if (updated == 0) {
       throw new NotFoundException("Could not update horse with ID %d, because it does not exist".formatted(horse.id()));
@@ -133,37 +120,33 @@ public class HorseJdbcDao implements HorseDao {
     LOG.trace("create({})", newHorse);
     GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
-    try {
-      jdbcTemplate.update(con -> {
-        PreparedStatement stmt = con.prepareStatement(SQL_CREATE, Statement.RETURN_GENERATED_KEYS);
-        stmt.setString(1, newHorse.name());
-        stmt.setString(2, newHorse.description());
-        stmt.setDate(3, Date.valueOf(newHorse.dateOfBirth()));
-        stmt.setString(4, newHorse.sex().toString());
+    jdbcTemplate.update(con -> {
+      PreparedStatement stmt = con.prepareStatement(SQL_CREATE, Statement.RETURN_GENERATED_KEYS);
+      stmt.setString(1, newHorse.name());
+      stmt.setString(2, newHorse.description());
+      stmt.setDate(3, Date.valueOf(newHorse.dateOfBirth()));
+      stmt.setString(4, newHorse.sex().toString());
 
-        if (newHorse.ownerId() != null) {
-          stmt.setLong(5, newHorse.ownerId());
-        } else {
-          stmt.setNull(5, Types.BIGINT);
-        }
+      if (newHorse.ownerId() != null) {
+        stmt.setLong(5, newHorse.ownerId());
+      } else {
+        stmt.setNull(5, Types.BIGINT);
+      }
 
-        if (newHorse.motherId() != null) {
-          stmt.setLong(6, newHorse.motherId());
-        } else {
-          stmt.setNull(6, Types.BIGINT);
-        }
+      if (newHorse.motherId() != null) {
+        stmt.setLong(6, newHorse.motherId());
+      } else {
+        stmt.setNull(6, Types.BIGINT);
+      }
 
-        if (newHorse.fatherId() != null) {
-          stmt.setLong(7, newHorse.fatherId());
-        } else {
-          stmt.setNull(7, Types.BIGINT);
-        }
+      if (newHorse.fatherId() != null) {
+        stmt.setLong(7, newHorse.fatherId());
+      } else {
+        stmt.setNull(7, Types.BIGINT);
+      }
 
-        return stmt;
-      }, keyHolder);
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+      return stmt;
+    }, keyHolder);
 
     Number key = keyHolder.getKey();
     if (key == null) {
@@ -186,12 +169,7 @@ public class HorseJdbcDao implements HorseDao {
   public void delete(long id) throws NotFoundException {
     LOG.trace("delete({})", id);
 
-    int deleted = 0;
-    try {
-      deleted = jdbcTemplate.update(SQL_DELETE, id);
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    int deleted = jdbcTemplate.update(SQL_DELETE, id);
 
     if (deleted == 0) {
       throw new NotFoundException("No horse with ID %d deleted".formatted(id));
@@ -211,7 +189,7 @@ public class HorseJdbcDao implements HorseDao {
     params.add(searchParameters.bornBefore());
     params.add(searchParameters.bornBefore());
     params.add(searchParameters.sex());
-    params.add(searchParameters.sex());
+    params.add(searchParameters.sex() == null ? null : searchParameters.sex().toString());
     params.add(searchParameters.ownerName());
     params.add(searchParameters.ownerName());
 
@@ -222,32 +200,31 @@ public class HorseJdbcDao implements HorseDao {
       params.add(maxAmount);
     }
 
-    try {
-      return jdbcTemplate.query(query, this::mapRow, params.toArray());
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    return jdbcTemplate.query(query, this::mapRow, params.toArray());
   }
 
   @Override
-  public Collection<Horse> getGenerationsAsTree(long id, long limit) throws NotFoundException {
+  public Map<Long, Horse> getGenerationsAsTree(long id, long limit) throws NotFoundException {
     LOG.trace("getGenerationsAsTree({}, {})", id, limit);
 
-    List<Horse> horses;
-    try {
-      horses = jdbcTemplate.query(SQL_SELECT_GENERATION, this::mapRow, id, limit);
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
-
+    List<Horse> horses = jdbcTemplate.query(SQL_SELECT_GENERATION, this::mapRow, id, limit);
     if (horses.isEmpty()) {
       throw new NotFoundException("Could not return family-tree for horse with ID %d, because it does not exist".formatted(id));
     }
 
-    return horses;
+    return horses.stream().collect(Collectors.toMap(Horse::getId, Function.identity()));
+  }
+
+  @Override
+  public Collection<Horse> getChildren(long id) {
+    LOG.trace("getChildren({})", id);
+
+    return jdbcTemplate.query(SQL_SELECT_ALL_CHILDREN, this::mapRow, id, id);
   }
 
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {
+    LOG.trace("mapRow({}, {})", result, rownum);
+
     return new Horse()
         .setId(result.getLong("id"))
         .setName(result.getString("name"))
