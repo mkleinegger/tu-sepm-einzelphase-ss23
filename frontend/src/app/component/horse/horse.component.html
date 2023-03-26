@@ -1,26 +1,9 @@
-<!-- SANITY CHECK BANNER
-    This is just for checking, that your setup works.
-    You can – and should – remove this later
-    -->
-<div class="container mt-3 mb-3" *ngIf="bannerError">
-  <div class="alert alert-danger" role="alert">
-    <h4>Error!</h4> {{ error }}
-    <p>Could not load horses.</p>
-    <p>Something is not quite right. Did you start the backend?</p>
-  </div>
-</div>
-
-<div class="container mt-3" *ngIf="!bannerError && horses">
-  <div class="alert alert-success" role="alert">
-    <h4 class="alert-heading">Well done!</h4>
-    <p>Your application is up and running.</p>
-    <p>You should see the current list of horses below.</p>
-  </div>
-</div>
-<!-- END SANITY CHECK BANNER -->
-
-<div class="d-flex flex-row w-auto">
-  <button class="btn btn-primary mr-1" (click)="reloadHorses()" aria-label="Reload horses">
+<div class="d-flex flex-row w-auto mt-5">
+  <button
+    class="btn btn-primary mr-1"
+    (click)="reloadHorses()"
+    aria-label="Reload horses"
+  >
     <i class="bi bi-arrow-clockwise"></i>
     Reload
   </button>
@@ -35,25 +18,27 @@
   <!-- this button is here, just so that simple submitting of this form
        to reload the horses, is possible -->
   <button type="submit" hidden="true">submit</button>
-  <div class="flex-grow-2">
-    <label for="searchHorseName" class="col-form-label">
-      Name
-    </label>
-    <input type="text" name="searchHorseName"
-           class="form-control"
-           [(ngModel)]="horseSearch.name"
-           (input)="reloadHorses()"
-    >
+  <div class="flex-grow-2 col-2">
+    <label for="searchHorseName" class="col-form-label"> Name </label>
+    <input
+      type="text"
+      name="searchHorseName"
+      class="form-control"
+      [(ngModel)]="horseSearch.name"
+      (ngModelChange)="this.updateQueue.next($event)"
+    />
   </div>
-  <div class="flex-grow-1 ms-1">
+  <div class="flex-grow-2 ms-1 col-4">
     <label for="searchHorseDescription" class="col-form-label">
       Description
     </label>
-    <input type="text" name="searchHorseDescription"
-           class="form-control"
-           [(ngModel)]="horseSearch.description"
-           (input)="reloadHorses()"
-    >
+    <input
+      type="text"
+      name="searchHorseDescription"
+      class="form-control"
+      [(ngModel)]="horseSearch.description"
+      (ngModelChange)="this.updateQueue.next($event)"
+    />
   </div>
   <div class="ms-1">
     <label for="searchHorseDateOfBirth" class="col-form-label">
@@ -62,36 +47,40 @@
     <!-- pattern and placeholder are fallbacks for browser, that use a simple text input for type="date"
          The date format of the plain HTML date input, in browser that support it is, sadly, not changeable in a cross-browser way
       -->
-    <input type="date" name="searchHorseDateOfBirth"
-           pattern="\d{4}-\d{2}-\d{2}"
-           placeholder="yyyy-mm-dd"
-           class="form-control"
-           [(ngModel)]="horseSearch.bornBefore"
-           (input)="reloadHorses()"
-           >
+    <input
+      type="date"
+      name="searchHorseDateOfBirth"
+      pattern="\d{4}-\d{2}-\d{2}"
+      placeholder="yyyy-mm-dd"
+      class="form-control"
+      [(ngModel)]="horseSearch.bornBefore"
+      (ngModelChange)="this.updateQueue.next($event)"
+    />
   </div>
   <div class="ms-1">
-    <label for="searchHorseSex" class="col-form-label">
-      Sex
-    </label>
-    <select name="searchHorseSex"
-            class="form-select"
-            [(ngModel)]="horseSearch.sex"
-            (change)="reloadHorses()"
-            >
+    <label for="searchHorseSex" class="col-form-label"> Sex </label>
+    <select
+      name="searchHorseSex"
+      class="form-select"
+      [(ngModel)]="horseSearch.sex"
+      (ngModelChange)="this.updateQueue.next($event)"
+    >
       <option></option>
       <option value="FEMALE">Female</option>
       <option value="MALE">Male</option>
     </select>
   </div>
-  <div class="flex-grow-2 ms-1">
-    <label for="searchHorseOwner" class="col-form-label">
-      Owner
-    </label>
-    <app-autocomplete name="searchHorseOwner"
-                      textInputClass="form-control"
-                      valueNeedsToMatchSuggestion="false"
-                      >
+  <div class="flex-grow-1 ms-1">
+    <label for="searchHorseOwner" class="col-form-label"> Owner </label>
+    <app-autocomplete
+      name="searchHorseOwner"
+      textInputClass="form-control"
+      valueNeedsToMatchSuggestion="false"
+      [(ngModel)]="horseSearch.ownerName"
+      [formatModel]="formatOwnerName"
+      [suggestions]="ownerSuggestions"
+      (ngModelChange)="this.updateQueue.next($event)"
+    >
     </app-autocomplete>
   </div>
 </form>
@@ -99,41 +88,49 @@
 <div class="mt-3">
   <table class="table table-hover">
     <thead>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Date of Birth</th>
-      <th>Sex</th>
-      <th>Owner</th>
+      <th style="width: 17%">Name</th>
+      <th style="width: 34%">Description</th>
+      <th style="width: 12%">Date of Birth</th>
+      <th style="width: 9%">Sex</th>
+      <th style="width: auto">Owner</th>
       <th class="min-width">Actions</th>
     </thead>
     <tbody>
       <tr *ngFor="let horse of horses" class="center-td">
-        <td>{{horse.name}}</td>
-        <td>{{horse.description}}</td>
-        <td>{{dateOfBirthAsLocaleDate(horse)}}</td>
-        <td>{{horse.sex === 'FEMALE' ? 'Female' : 'Male'}}</td>
-        <td>{{ownerName(horse.owner)}}</td>
+        <td>{{ formatText(horse?.name, 25) }}</td>
+        <td>{{ formatText(horse?.description, 160) }}</td>
+        <td>{{ horse.dateOfBirth | date : 'dd.MM.yyyy' }}</td>
+        <td>{{ horse.sex === 'FEMALE' ? 'Female' : 'Male' }}</td>
+        <td>{{ formatText(ownerName(horse.owner), 25) }}</td>
         <td>
           <div class="btn-group">
-            <a class="btn btn-sm responsive-info-button"
+            <a
+              class="btn btn-sm responsive-info-button"
               [routerLink]="['detail', horse.id]"
-               aria-label="Show horse details">
+              aria-label="Show horse details"
+            >
               <i class="bi bi-info-lg"></i>
             </a>
-            <a class="btn btn-sm responsive-info-button"
+            <a
+              class="btn btn-sm responsive-tree-button"
               aria-label="Generations of Horse"
               [routerLink]="['generations', horse.id]"
-              [queryParams]="{ limitOfGenerations: 3}">
+              [queryParams]="{ limitOfGenerations: 3 }"
+            >
               <i class="bi bi-list-nested"></i>
             </a>
-            <a class="btn btn-sm responsive-danger-button"
+            <a
+              class="btn btn-sm responsive-danger-button"
               aria-label="Delete horse"
-              (click)="deleteHorse(horse)">
+              (click)="deleteHorse(horse)"
+            >
               <i class="bi bi-trash"></i>
             </a>
-            <a class="btn btn-sm responsive-warning-button"
-               [routerLink]="['edit', horse.id]"
-               aria-label="Edit horse">
+            <a
+              class="btn btn-sm responsive-warning-button"
+              [routerLink]="['edit', horse.id]"
+              aria-label="Edit horse"
+            >
               <i class="bi bi-pencil"></i>
             </a>
           </div>

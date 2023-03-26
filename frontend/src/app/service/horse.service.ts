@@ -13,52 +13,56 @@ export class HorseService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Get all horses stored in the system
+   * Get all horses stored in the system, which match the searchParams
    *
-   * @return observable list of found horses.
+   * @param searchParams all search criteria, to match the horses
+   * @returns an Observable of Horses
    */
-  getAll(): Observable<Horse[]> {
-    return this.http.get<Horse[]>(baseUri);
-  }
-
   search(searchParams: HorseSearch): Observable<Horse[]> {
-    console.log(searchParams);
     let params = new HttpParams();
-
     if (searchParams.name) {
-      params = params.set('name', searchParams.name ?? null);
+      params = params.set('name', searchParams.name);
     }
     if (searchParams.description) {
-      params = params.set('description', searchParams.description ?? null);
+      params = params.set('description', searchParams.description);
     }
     if (searchParams.bornBefore) {
-      params = params.set(
-        'bornBefore',
-        searchParams.bornBefore.toString() ?? null
-      );
+      params = params.set('bornBefore', searchParams.bornBefore.toString());
     }
     if (searchParams.ownerName) {
-      params = params.set('ownerName', searchParams.ownerName ?? null);
+      params = params.set('ownerName', searchParams.ownerName);
     }
     if (searchParams.sex) {
-      params = params.set('sex', searchParams.sex ?? null);
+      params = params.set('sex', searchParams.sex);
     }
     if (searchParams.limit) {
-      params = params.set('limit', searchParams.limit ?? null);
+      params = params.set('limit', searchParams.limit);
     }
-
-    console.log(params);
 
     return this.http.get<Horse[]>(baseUri, { params });
   }
 
+  /**
+   * Gets maximal the number of horses, specified in limitTo, which are matching the name
+   *
+   * @param name Name to search to
+   * @param limitTo number of Horses to load, even if more are available
+   * @returns  an Observable of Horses
+   */
   public searchByName(name: string, limitTo: number): Observable<Horse[]> {
     const params = new HttpParams().set('name', name).set('limit', limitTo);
     return this.http.get<Horse[]>(baseUri, { params });
   }
 
-  public getGenerationById(
-    id: string | undefined,
+  /**
+   * Gets an family-tree containing having a depth of maximal the limit specified
+   *
+   * @param id the id of the horse from which the tree should be loaded
+   * @param limit number of generations, which should be loaded
+   * @returns observable for the loaded family-tree
+   */
+  public getFamilyTree(
+    id: number | undefined,
     limit: number
   ): Observable<HorseTree> {
     const params = new HttpParams().set('limit', limit);
@@ -69,6 +73,7 @@ export class HorseService {
   /**
    * Get horse with specified id
    *
+   * @param id the id of the horse that should be loaded
    * @return observable for the specified horse.
    */
   getById(id: number | undefined): Observable<Horse> {
@@ -88,7 +93,6 @@ export class HorseService {
   /**
    * Updates an existing horse in the system
    *
-   * @param id the id of the horse that should be updated
    * @param horse the data for the horse that should be updated
    * @return an Observable for the updated horse
    */
