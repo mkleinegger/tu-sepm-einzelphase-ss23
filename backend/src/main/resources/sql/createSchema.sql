@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS owner
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
-  email VARCHAR(255)
+  email VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS horse
@@ -15,5 +15,6 @@ CREATE TABLE IF NOT EXISTS horse
   sex ENUM('MALE', 'FEMALE') NOT NULL,
   owner_id BIGINT REFERENCES owner(id),
   mother_id BIGINT REFERENCES horse(id) ON DELETE SET NULL,
-  father_id BIGINT REFERENCES horse(id) ON DELETE SET NULL
+  father_id BIGINT REFERENCES horse(id) ON DELETE SET NULL,
+  CHECK (mother_id <> father_id)
 );
