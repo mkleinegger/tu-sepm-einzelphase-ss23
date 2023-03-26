@@ -28,7 +28,7 @@ public interface OwnerDao {
    * @param ids a collection of ids, to fetch the referenced owners by.
    * @return the collection of all found owners, without those, that are not in the persistent data store
    */
-  Collection<Owner> getAllById(Collection<Long> ids);
+  Collection<Owner> getAllById(Collection<Long> ids) throws NotFoundException;
 
   /**
    * Search for owners matching the criteria in {@code searchParameters}.

@@ -3,6 +3,7 @@ package at.ac.tuwien.sepm.assignment.individual.rest;
 import at.ac.tuwien.sepm.assignment.individual.dto.OwnerCreateDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.OwnerDto;
 import at.ac.tuwien.sepm.assignment.individual.dto.OwnerSearchDto;
+import at.ac.tuwien.sepm.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepm.assignment.individual.exception.ValidationException;
 import at.ac.tuwien.sepm.assignment.individual.service.OwnerService;
 import org.slf4j.Logger;
@@ -21,7 +22,6 @@ import java.util.stream.Stream;
 public class OwnerEndpoint {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   static final String BASE_PATH = "/owners";
-
   private final OwnerService service;
 
   public OwnerEndpoint(OwnerService service) {
@@ -30,14 +30,17 @@ public class OwnerEndpoint {
 
   @GetMapping
   public Stream<OwnerDto> search(OwnerSearchDto searchParameters) {
-    LOG.info("GET " + BASE_PATH + " query parameters: {}", searchParameters);
+    LOG.info("GET " + BASE_PATH);
+    LOG.debug("query parameters: {}", searchParameters);
+
     return service.search(searchParameters);
   }
 
   @PostMapping
-  public OwnerDto crate(@RequestBody OwnerCreateDto newOwner) throws ValidationException {
-    LOG.info("POST " + BASE_PATH + " request-body: {}", newOwner);
+  public OwnerDto create(@RequestBody OwnerCreateDto newOwner) throws ValidationException, ConflictException {
+    LOG.info("POST " + BASE_PATH);
+    LOG.debug("request-body: {}", newOwner);
+
     return service.create(newOwner);
   }
-
 }

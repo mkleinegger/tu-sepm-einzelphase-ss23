@@ -5,11 +5,9 @@ import at.ac.tuwien.sepm.assignment.individual.dto.OwnerSearchDto;
 import at.ac.tuwien.sepm.assignment.individual.entity.Owner;
 import at.ac.tuwien.sepm.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepm.assignment.individual.exception.NotFoundException;
-import at.ac.tuwien.sepm.assignment.individual.exception.PersistenceException;
 import at.ac.tuwien.sepm.assignment.individual.persistence.OwnerDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -48,12 +46,7 @@ public class OwnerJdbcDao implements OwnerDao {
   public Owner getById(long id) throws NotFoundException {
     LOG.trace("getById({})", id);
 
-    List<Owner> owners;
-    try {
-      owners = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    List<Owner> owners = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
 
     if (owners.isEmpty()) {
       throw new NotFoundException("Owner with ID %d not found".formatted(id));
@@ -97,11 +90,7 @@ public class OwnerJdbcDao implements OwnerDao {
     LOG.trace("getAllById({})", ids);
 
     var statementParams = Collections.singletonMap("ids", ids);
-    try {
-      return jdbcNamed.query(SQL_SELECT_ALL, statementParams, this::mapRow);
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    return jdbcNamed.query(SQL_SELECT_ALL, statementParams, this::mapRow);
   }
 
   @Override
@@ -118,14 +107,12 @@ public class OwnerJdbcDao implements OwnerDao {
       params.add(maxAmount);
     }
 
-    try {
-      return jdbcTemplate.query(query, this::mapRow, params.toArray());
-    } catch (DataAccessException e) {
-      throw new PersistenceException(e);
-    }
+    return jdbcTemplate.query(query, this::mapRow, params.toArray());
   }
 
   private Owner mapRow(ResultSet resultSet, int i) throws SQLException {
+    LOG.trace("mapRow({}, {})", resultSet, i);
+
     return new Owner()
         .setId(resultSet.getLong("id"))
         .setFirstName(resultSet.getString("first_name"))
