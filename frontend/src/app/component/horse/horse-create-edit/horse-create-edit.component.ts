@@ -60,7 +60,7 @@ export class HorseCreateEditComponent implements OnInit {
     }
   }
 
-  get modeIsCreate(): boolean {
+  public get modeIsCreate(): boolean {
     return this.mode === HorseCreateEditMode.create;
   }
 
@@ -94,8 +94,17 @@ export class HorseCreateEditComponent implements OnInit {
           );
           this.router.navigate(['/horses']);
         }
-        this.service.getById(id).subscribe((response: Horse) => {
-          this.horse = response;
+
+        const observable: Observable<Horse> = this.service.getById(id);
+        observable.subscribe({
+          next: (data: Horse) => {
+            this.horse = data;
+          },
+          error: (error) => {
+            console.error('Error creating horse', error);
+            this.errorHandler(error, 'get');
+            this.router.navigate(['/horses']);
+          },
         });
       });
     }
@@ -118,7 +127,7 @@ export class HorseCreateEditComponent implements OnInit {
     return horse == null ? '' : horse.name;
   }
 
-  public deleteHorse(horse: Horse | null) {
+  public deleteHorse(horse: Horse) {
     if (horse != null) {
       const observable: Observable<Horse> = this.service.delete(horse.id);
       observable.subscribe({
@@ -128,15 +137,7 @@ export class HorseCreateEditComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating horse', error);
-          if (error.status === 404) {
-            this.notification.error(
-              'Could not delete horse - ' + error.error.error
-            );
-          } else if (error.status >= 500) {
-            this.notification.error(
-              error.error.error + ': Something unexpected happend!'
-            );
-          }
+          this.errorHandler(error, 'delete');
         },
       });
     }
@@ -168,18 +169,31 @@ export class HorseCreateEditComponent implements OnInit {
           this.router.navigate(['/horses']);
         },
         error: (error) => {
-          console.error('Error creating horse', error);
-          if (error.status === 409 || error.status === 422) {
-            for (const err of error.error.errors) {
-              this.notification.error(err);
-            }
-          } else if (error.status >= 500) {
-            this.notification.error(
-              error.error.error + ': Something unexpected happend!'
-            );
-          }
+          console.error(`Error ${this.modeActionFinished} horse`, error);
+          this.errorHandler(error, 'update');
         },
       });
+    }
+  }
+
+  private errorHandler(
+    error: any,
+    action: string | undefined = undefined
+  ): void {
+    if (error.status === 0) {
+      this.notification.error('Backend is not reachable');
+    } else if (error.status === 404) {
+      this.notification.error(
+        `Could not ${action} horse - ` + error.error.error
+      );
+    } else if (error.status === 409 || error.status === 422) {
+      for (const err of error.error.errors) {
+        this.notification.error(err);
+      }
+    } else if (error.status >= 500) {
+      this.notification.error(
+        error.error.error + ': Something unexpected happend!'
+      );
     }
   }
 }

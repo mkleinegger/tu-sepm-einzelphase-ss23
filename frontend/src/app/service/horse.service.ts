@@ -25,15 +25,27 @@ export class HorseService {
     console.log(searchParams);
     let params = new HttpParams();
 
-    if (searchParams.name) params = params.set('name', searchParams.name);
-    if (searchParams.description)
-      params = params.set('description', searchParams.description);
-    if (searchParams.bornBefore)
-      params = params.set('bornBefore', searchParams.bornBefore.toString());
-    if (searchParams.ownerName)
-      params = params.set('ownerName', searchParams.ownerName);
-    if (searchParams.sex) params = params.set('sex', searchParams.sex);
-    if (searchParams.limit) params = params.set('limit', searchParams.limit);
+    if (searchParams.name) {
+      params = params.set('name', searchParams.name ?? null);
+    }
+    if (searchParams.description) {
+      params = params.set('description', searchParams.description ?? null);
+    }
+    if (searchParams.bornBefore) {
+      params = params.set(
+        'bornBefore',
+        searchParams.bornBefore.toString() ?? null
+      );
+    }
+    if (searchParams.ownerName) {
+      params = params.set('ownerName', searchParams.ownerName ?? null);
+    }
+    if (searchParams.sex) {
+      params = params.set('sex', searchParams.sex ?? null);
+    }
+    if (searchParams.limit) {
+      params = params.set('limit', searchParams.limit ?? null);
+    }
 
     console.log(params);
 
@@ -87,7 +99,7 @@ export class HorseService {
   /**
    * Deletes an existing horse from the system
    *
-   * @param horse the data for the horse that should be deleted
+   * @param id he id of the horse that should be deleted
    * @return an Observable for the deleted horse
    */
   delete(id: number | undefined): Observable<Horse> {
