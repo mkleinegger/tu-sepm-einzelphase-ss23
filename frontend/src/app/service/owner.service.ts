@@ -7,22 +7,24 @@ import { Owner } from '../dto/owner';
 const baseUri = environment.backendUrl + '/owners';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OwnerService {
-
-  constructor(
-    private http: HttpClient,
-  ) { }
+  constructor(private http: HttpClient) {}
 
   public getAll(): Observable<Owner[]> {
     return this.http.get<Owner[]>(baseUri);
   }
 
+  /**
+   * Get all owners stored in the system, which match the name
+   *
+   * @param name the substring of an owners name
+   * @param limitTo the max amount of owners which should be returned
+   * @returns an Observable of Owners
+   */
   public searchByName(name: string, limitTo: number): Observable<Owner[]> {
-    const params = new HttpParams()
-      .set('name', name)
-      .set('maxAmount', limitTo);
+    const params = new HttpParams().set('name', name).set('maxAmount', limitTo);
     return this.http.get<Owner[]>(baseUri, { params });
   }
 
@@ -32,10 +34,7 @@ export class OwnerService {
    * @param owner the data for the horse that should be created
    * @return an Observable for the created horse
    */
-    create(owner: Owner): Observable<Owner> {
-      return this.http.post<Owner>(
-        baseUri,
-        owner
-      );
-    }
+  create(owner: Owner): Observable<Owner> {
+    return this.http.post<Owner>(baseUri, owner);
+  }
 }
