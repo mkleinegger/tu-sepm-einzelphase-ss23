@@ -13,9 +13,9 @@ const routes: Routes = [
   {path: 'owners', children: [
     {path: '', component: OwnerComponent},
     {path: 'create', component: OwnerAddComponent}
-  ]},    
+  ]},
   {path: 'horses', children: [
-    {path: '', component: HorseComponent},    
+    {path: '', component: HorseComponent},
     {path: 'generations/:id', component: GenerationsViewComponent},
     {path: 'detail/:id', component: HorseDetailComponent},
     {path: 'edit/:id', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.edit}},

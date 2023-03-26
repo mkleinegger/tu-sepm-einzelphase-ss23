@@ -1,22 +1,31 @@
-
 <div class="input-group">
-  <input type="text"
-  [attr.list]="dataListId"
-  [ngClass]="textInputClass"
-  [(ngModel)]="inputText"
-  (ngModelChange)="inputChange.next($event)"
-  [disabled]="disabled"
-  (blur)="resetInputText()"
-  >
+  <input
+    type="text"
+    class="form-control"
+    [attr.list]="dataListId"
+    [ngClass]="textInputClass"
+    [(ngModel)]="inputText"
+    (ngModelChange)="inputChange.next($event)"
+    [disabled]="disabled"
+    (blur)="resetInputText()"
+  />
   <div class="input-group-append">
-    <button type="button"
-    class="btn btn-danger"
-    (click)="clearInputText()"
-  >       x
-  </button>
+    <button
+      type="button"
+      class="btn btn-outline-secondary leftSideNoRoundedCorners"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      title="Clear input"
+      (click)="clearInputText()"
+    >
+      x
+    </button>
   </div>
 </div>
 
 <datalist [id]="dataListId" [ngClass]="datalistClass">
-  <option *ngFor="let candidateEntry of valueCandidates | keyvalue" [value]="formatModel(candidateEntry.value)">
+  <option
+    *ngFor="let candidateEntry of valueCandidates | keyvalue"
+    [value]="formatModel(candidateEntry.value)"
+  ></option>
 </datalist>

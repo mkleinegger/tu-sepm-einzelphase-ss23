@@ -1,6 +1,4 @@
-
-<h1 class="display-1">{{heading}}</h1>
-
+<h1 class="display-1">{{ heading }}</h1>
 
 <form #form="ngForm" (ngSubmit)="onSubmit(form)">
   <div class="row">
@@ -8,20 +6,24 @@
     <div class="mb-2 col-lg-6">
       <!-- When nesting rows, always make row > col-* > row. The Bootstrap classes do not work right when an element is both col* and row -->
       <div class="row">
-        <label for="horseName" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        <label
+          for="horseName"
+          class="col-form-label text-md-end text-muted col-md-2 col-lg-4"
+        >
           Name
         </label>
         <div class="col-md-10 col-lg-8">
-          <input type="text"
-                 id="horseName"
-                 name="horseName"
-                 placeholder="Horse name"
-                 class="form-control"
-                 [class]="dynamicCssClassesForInput(horseNameModel)"
-                 [(ngModel)]="horse.name"
-                 #horseNameModel="ngModel"
-                 required
-                 >
+          <input
+            type="text"
+            id="horseName"
+            name="horseName"
+            placeholder="Horse name"
+            class="form-control"
+            [class]="dynamicCssClassesForInput(horseNameModel)"
+            [(ngModel)]="horse.name"
+            #horseNameModel="ngModel"
+            required
+          />
           <div class="invalid-feedback">
             <!-- This is shown, when the form validation deems the name input to be invalid -->
             Name is required
@@ -31,23 +33,24 @@
     </div>
     <div class="mb-2 col-lg-6">
       <div class="row">
-        <label for="horseDateOfBirth" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        <label
+          for="horseDateOfBirth"
+          class="col-form-label text-md-end text-muted col-md-2 col-lg-4"
+        >
           Date of Birth
         </label>
-        <div class="col-md-10 col-lg-8"
-             >
-          <input type="date"
-                 id="horseDateOfBirth"
-                 name="horseDateOfBirth"
-                 class="form-control"
-                 [class]="dynamicCssClassesForInput(horseDateOfBirthModel)"
-                 [(ngModel)]="horse.dateOfBirth"
-                 #horseDateOfBirthModel="ngModel"
-                 required
-                 >
-          <div class="invalid-feedback">
-            Date of birth is required
-          </div>
+        <div class="col-md-10 col-lg-8">
+          <input
+            type="date"
+            id="horseDateOfBirth"
+            name="horseDateOfBirth"
+            class="form-control"
+            [class]="dynamicCssClassesForInput(horseDateOfBirthModel)"
+            [(ngModel)]="horse.dateOfBirth"
+            #horseDateOfBirthModel="ngModel"
+            required
+          />
+          <div class="invalid-feedback">Date of birth is required</div>
         </div>
       </div>
     </div>
@@ -58,17 +61,20 @@
     <!-- Start sex and owner row -->
     <div class="mb-2 col-lg-6">
       <div class="row">
-        <label for="horseSex" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        <label
+          for="horseSex"
+          class="col-form-label text-md-end text-muted col-md-2 col-lg-4"
+        >
           Sex
         </label>
-        <div class="col-md-10 col-lg-8"
-             >
-          <select class="form-select"
-                  id="horseSex"
-                  name="horseSex"
-                  [(ngModel)]="horse.sex"
-                  required
-                  >
+        <div class="col-md-10 col-lg-8">
+          <select
+            class="form-select"
+            id="horseSex"
+            name="horseSex"
+            [(ngModel)]="horse.sex"
+            required
+          >
             <option value="FEMALE">Female</option>
             <option value="MALE">Male</option>
           </select>
@@ -78,7 +84,10 @@
 
     <div class="mb-2 col-lg-6">
       <div class="row">
-        <label for="horseOwner" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        <label
+          for="horseOwner"
+          class="col-form-label text-md-end text-muted col-md-2 col-lg-4"
+        >
           Owner
         </label>
         <app-autocomplete
@@ -90,7 +99,7 @@
           [(ngModel)]="horse.owner"
           [formatModel]="formatOwnerName"
           [suggestions]="ownerSuggestions"
-          ></app-autocomplete>
+        ></app-autocomplete>
       </div>
     </div>
     <!-- End sex and owner row -->
@@ -98,7 +107,10 @@
   <div class="row">
     <div class="mb-2 col-lg-6">
       <div class="row">
-        <label for="horseMother" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        <label
+          for="horseMother"
+          class="col-form-label text-md-end text-muted col-md-2 col-lg-4"
+        >
           Mother
         </label>
         <app-autocomplete
@@ -110,12 +122,15 @@
           [(ngModel)]="horse.mother"
           [formatModel]="formatHorseName"
           [suggestions]="horseSuggestions"
-          ></app-autocomplete>
+        ></app-autocomplete>
       </div>
     </div>
     <div class="mb-2 col-lg-6">
       <div class="row">
-        <label for="horseFather" class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        <label
+          for="horseFather"
+          class="col-form-label text-md-end text-muted col-md-2 col-lg-4"
+        >
           Father
         </label>
         <app-autocomplete
@@ -127,43 +142,48 @@
           [(ngModel)]="horse.father"
           [formatModel]="formatHorseName"
           [suggestions]="horseSuggestions"
-          ></app-autocomplete>
+        ></app-autocomplete>
       </div>
     </div>
   </div>
 
   <div class="row">
     <!-- No row and col-* here. We want this to always span the whole width. -->
-    <label for="horseDescription" class="col-form-label text-md-end text-md-end text-muted col-md-2">
+    <label
+      for="horseDescription"
+      class="col-form-label text-md-end text-md-end text-muted col-md-2"
+    >
       Description
     </label>
-    <div class="col-md-10"
-         >
-      <textarea class="form-control"
-                id="horseDescription"
-                name="horseDescription"
-                [(ngModel)]="horse.description"
-                >
+    <div class="col-md-10">
+      <textarea
+        class="form-control"
+        id="horseDescription"
+        name="horseDescription"
+        [(ngModel)]="horse.description"
+      >
       </textarea>
     </div>
   </div>
 
   <div class="mt-4 d-flex flex-row">
-    <button type="button"
-            class="btn btn-danger"
-            *ngIf="!modeIsCreate"
-            (click)="deleteHorse(horse)"
-            >
+    <button
+      type="button"
+      class="btn btn-danger"
+      *ngIf="!modeIsCreate"
+      (click)="deleteHorse(horse)"
+    >
       <i class="bi bi-trash"></i>
       Delete
     </button>
     <span class="flex-grow-1"></span>
-    <button type="submit"
-            class="btn btn-primary"
-            [disabled]="!form.valid"
-            type="submit"
-            >
-      {{submitButtonText}}
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="!form.valid"
+      type="submit"
+    >
+      {{ submitButtonText }}
     </button>
   </div>
 </form>
