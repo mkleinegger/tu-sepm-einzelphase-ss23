@@ -1,6 +1,17 @@
 <h1 class="display-1">{{ heading }}</h1>
 
-<form #form="ngForm" (ngSubmit)="onSubmit(form)">
+<div class="row">
+  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+    <a [routerLink]="['/horses/detail', horse.id]">
+      <button type="button" class="btn btn-outline-secondary">
+        <i class="bi bi-info"></i>
+        Details
+      </button>
+    </a>
+  </div>
+</div>
+
+<form #form="ngForm" (ngSubmit)="onSubmit(form)" class="mt-2">
   <div class="row">
     <!-- Start name and date of birth row -->
     <div class="mb-2 col-lg-6">

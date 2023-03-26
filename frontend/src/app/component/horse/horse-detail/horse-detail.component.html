@@ -1,14 +1,17 @@
 <h1 class="display-1">Details of Horse</h1>
 
 <div class="row">
-  <div class="col-md-12 col-lg-12">
+  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
     <a [routerLink]="['/horses/edit', horse.id]">
-      <button type="button" class="btn btn-primary float-end">Edit</button>
+      <button type="button" class="btn btn-outline-secondary">
+        <i class="bi bi-pencil"></i>
+        Edit
+      </button>
     </a>
   </div>
 </div>
 
-<div *ngIf="horse">
+<div>
   <div class="row">
     <!-- Start name and date of birth row -->
     <div class="mb-2 col-lg-6">
@@ -40,7 +43,7 @@
           id="horseDateOfBirth"
           class="col-form-label text-md-start col-md-10 col-lg-8"
         >
-          {{ horse.dateOfBirth | date : 'dd.MM.yyyy' }}
+          {{ horse?.dateOfBirth | date : 'dd.MM.yyyy' }}
         </span>
       </div>
     </div>
@@ -78,7 +81,7 @@
           id="horseOwner"
           class="col-form-label text-md-start col-md-10 col-lg-8"
         >
-          {{ formatOwnerName(horse.owner) }}
+          {{ formatOwnerName(horse?.owner) }}
         </span>
       </div>
     </div>
@@ -100,7 +103,7 @@
           [routerLink]="['/horses/detail', horse.mother.id]"
         >
           <button type="button" class="btn btn-light">
-            {{ formatHorseName(horse.mother) }}
+            {{ formatHorseName(horse?.mother) }}
           </button>
         </a>
       </div>
@@ -121,7 +124,7 @@
           [routerLink]="['/horses/detail', horse.father.id]"
         >
           <button type="button" class="btn btn-light">
-            {{ formatHorseName(horse.father) }}
+            {{ formatHorseName(horse?.father) }}
           </button>
         </a>
       </div>
@@ -138,10 +141,10 @@
     </label>
     <span
       id="horseDescription"
-      style="height: 210px"
+      style="max-height: 210px"
       class="col-form-label text-md-start col-md-10 col-lg-8 overflow-auto"
     >
-      {{ horse.description }}
+      {{ horse?.description }}
     </span>
   </div>
 
