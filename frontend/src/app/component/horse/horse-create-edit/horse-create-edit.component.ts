@@ -101,7 +101,7 @@ export class HorseCreateEditComponent implements OnInit {
             this.horse = data;
           },
           error: (error) => {
-            console.error('Error creating horse', error);
+            console.error('Error getting horse', error);
             this.errorHandler(error, 'get');
             this.router.navigate(['/horses']);
           },
@@ -136,7 +136,7 @@ export class HorseCreateEditComponent implements OnInit {
           this.router.navigate(['/horses']);
         },
         error: (error) => {
-          console.error('Error creating horse', error);
+          console.error('Error deleting horse', error);
           this.errorHandler(error, 'delete');
         },
       });
