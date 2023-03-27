@@ -23,9 +23,9 @@
     </thead>
     <tbody>
       <tr *ngFor="let owner of owners" class="center-td">
-        <td>{{ owner.firstName }}</td>
-        <td>{{ owner.lastName }}</td>
-        <td>{{ owner.email }}</td>
+        <td>{{ formatOwnerName(owner?.firstName, 60) }}</td>
+        <td>{{ formatOwnerName(owner?.lastName, 60) }}</td>
+        <td>{{ owner?.email }}</td>
       </tr>
     </tbody>
   </table>

@@ -13,11 +13,10 @@ export interface Horse {
 }
 
 export interface HorseTree {
-  id?: number;
-  name?: string;
-  dateOfBirth?: Date;
-  sex?: Sex;
-  generation?: number;
+  id: number;
+  name: string;
+  dateOfBirth: Date;
+  sex: Sex;
   mother?: HorseTree;
   father?: HorseTree;
 }

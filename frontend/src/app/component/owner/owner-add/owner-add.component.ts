@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { NgForm, NgModel } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Owner } from 'src/app/dto/owner';
 import { OwnerService } from 'src/app/service/owner.service';
 
@@ -36,6 +36,10 @@ export class OwnerAddComponent {
   public onSubmit(form: NgForm): void {
     console.log('is form valid?', form.valid, this.owner);
     if (form.valid) {
+      if (this.owner.email === '') {
+        delete this.owner.email;
+      }
+
       const observable: Observable<Owner> = this.service.create(this.owner);
       observable.subscribe({
         next: () => {

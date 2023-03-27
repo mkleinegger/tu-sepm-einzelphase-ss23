@@ -2,7 +2,7 @@
 
 <div class="row">
   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-    <a [routerLink]="['/horses/edit', horse.id]">
+    <a [routerLink]="['/horses', horse.id, 'edit']">
       <button type="button" class="btn btn-outline-secondary">
         <i class="bi bi-pencil"></i>
         Edit
@@ -100,7 +100,7 @@
           *ngIf="horse.mother"
           class="col-md-10 col-lg-8"
           id="horseMother"
-          [routerLink]="['/horses/detail', horse.mother.id]"
+          [routerLink]="['/horses', horse.mother.id, 'detail']"
         >
           <button type="button" class="btn btn-light">
             {{ formatHorseName(horse?.mother) }}
@@ -121,7 +121,7 @@
           *ngIf="horse.father"
           class="col-md-10 col-lg-8"
           id="horseFather"
-          [routerLink]="['/horses/detail', horse.father.id]"
+          [routerLink]="['/horses', horse.father.id, 'detail']"
         >
           <button type="button" class="btn btn-light">
             {{ formatHorseName(horse?.father) }}

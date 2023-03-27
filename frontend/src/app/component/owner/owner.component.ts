@@ -32,6 +32,16 @@ export class OwnerComponent implements OnInit {
     });
   }
 
+  formatOwnerName(name: string | null, numberOfChars: number): string {
+    if (name == null || numberOfChars === 0) {
+      return '';
+    }
+
+    return name.length >= numberOfChars
+      ? name.substring(0, numberOfChars) + '...'
+      : name;
+  }
+
   private errorHandler(
     error: any,
     action: string | undefined = undefined
