@@ -59,13 +59,13 @@ public class HorseDaoTest {
     assertThat(horses)
         .extracting(Horse::getId, Horse::getName)
         .contains(tuple(-1L, "Thunder"),
-            tuple(-2L, "Daisy"),
-            tuple(-3L, "Spirit"),
-            tuple(-4L, "Bella"),
-            tuple(-5L, "Max"),
-            tuple(-6L, "Luna"),
-            tuple(-7L, "Romeo"),
-            tuple(-8L, "Sophie"),
+            tuple(-2L, "Romeo"),
+            tuple(-3L, "Sophie"),
+            tuple(-4L, "Daisy"),
+            tuple(-5L, "Spirit"),
+            tuple(-6L, "Bella"),
+            tuple(-7L, "Max"),
+            tuple(-8L, "Luna"),
             tuple(-9L, "Apollo"),
             tuple(-10L, "Misty"));
   }
@@ -121,13 +121,13 @@ public class HorseDaoTest {
           .extracting(Horse::getId, Horse::getName)
           .contains(tuple(1L, horseToCreate.name()),
               tuple(-1L, "Thunder"),
-              tuple(-2L, "Daisy"),
-              tuple(-3L, "Spirit"),
-              tuple(-4L, "Bella"),
-              tuple(-5L, "Max"),
-              tuple(-6L, "Luna"),
-              tuple(-7L, "Romeo"),
-              tuple(-8L, "Sophie"),
+              tuple(-2L, "Romeo"),
+              tuple(-3L, "Sophie"),
+              tuple(-4L, "Daisy"),
+              tuple(-5L, "Spirit"),
+              tuple(-6L, "Bella"),
+              tuple(-7L, "Max"),
+              tuple(-8L, "Luna"),
               tuple(-9L, "Apollo"),
               tuple(-10L, "Misty"));
     });

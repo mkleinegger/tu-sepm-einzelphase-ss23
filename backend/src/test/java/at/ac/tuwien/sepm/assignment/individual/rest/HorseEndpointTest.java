@@ -84,16 +84,16 @@ public class HorseEndpointTest {
     assertThat(horseResult.size()).isEqualTo(10);
     assertThat(horseResult)
         .extracting(HorseListDto::id, HorseListDto::name)
-        .contains(tuple(-1L, "Thunder"))
-        .contains(tuple(-2L, "Daisy"))
-        .contains(tuple(-3L, "Spirit"))
-        .contains(tuple(-4L, "Bella"))
-        .contains(tuple(-5L, "Max"))
-        .contains(tuple(-6L, "Luna"))
-        .contains(tuple(-7L, "Romeo"))
-        .contains(tuple(-8L, "Sophie"))
-        .contains(tuple(-9L, "Apollo"))
-        .contains(tuple(-10L, "Misty"));
+        .contains(tuple(-1L, "Thunder"),
+            tuple(-2L, "Romeo"),
+            tuple(-3L, "Sophie"),
+            tuple(-4L, "Daisy"),
+            tuple(-5L, "Spirit"),
+            tuple(-6L, "Bella"),
+            tuple(-7L, "Max"),
+            tuple(-8L, "Luna"),
+            tuple(-9L, "Apollo"),
+            tuple(-10L, "Misty"));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class HorseEndpointTest {
     assertThat(familyTree).isNotNull();
     assertThat(familyTree.id()).isEqualTo(-6L);
     assertThat(familyTree.mother().id()).isEqualTo(-4L);
-    assertThat(familyTree.father().id()).isEqualTo(-3L);
+    assertThat(familyTree.father().id()).isEqualTo(-1L);
     assertThat(familyTree.mother().mother()).isNull();
     assertThat(familyTree.mother().father()).isNull();
     assertThat(familyTree.father().mother()).isNull();
@@ -129,7 +129,7 @@ public class HorseEndpointTest {
   @DisplayName("Trying update an horse where conflicts would be")
   public void updateWithConflicts() throws Exception {
     HorseDetailDto horse = new HorseDetailDto(-1L, "update via Endpoint", null, LocalDate.of(2023, 1, 21), Sex.FEMALE, null,
-        null, new HorseDetailDto(-2L, null, null, null, null, null, null, null));
+        null, new HorseDetailDto(-4L, null, null, null, null, null, null, null));
 
     byte[] body = mockMvc
         .perform(MockMvcRequestBuilders
@@ -177,7 +177,7 @@ public class HorseEndpointTest {
         Sex.FEMALE,
         new OwnerDto(-1L, null, null, null),
         null,
-        new HorseDetailDto(-3L, null, null, null, null, null, null, null));
+        new HorseDetailDto(-5L, null, null, null, null, null, null, null));
 
     byte[] body = mockMvc
         .perform(MockMvcRequestBuilders

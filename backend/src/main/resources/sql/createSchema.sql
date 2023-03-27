@@ -16,5 +16,6 @@ CREATE TABLE IF NOT EXISTS horse
   owner_id BIGINT REFERENCES owner(id),
   mother_id BIGINT REFERENCES horse(id) ON DELETE SET NULL,
   father_id BIGINT REFERENCES horse(id) ON DELETE SET NULL,
-  CHECK (mother_id <> father_id)
+  CHECK (mother_id <> father_id),
+  CHECK (date_of_birth < NOW())
 );

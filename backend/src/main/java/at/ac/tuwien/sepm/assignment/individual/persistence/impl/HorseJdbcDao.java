@@ -40,7 +40,7 @@ public class HorseJdbcDao implements HorseDao {
       + " LEFT JOIN " + TABLE_NAME_OWNER + " o ON o.id = h.owner_id"
       + " WHERE (? IS NULL OR UPPER(h.name) like UPPER('%'||COALESCE(?, '')||'%'))"
       + " AND (? IS NULL OR UPPER(h.description) like UPPER('%'||COALESCE(?, '')||'%'))"
-      + " AND (? IS NULL OR h.date_of_birth > ?)"
+      + " AND (? IS NULL OR h.date_of_birth < ?)"
       + " AND (? IS NULL OR h.sex = ?)"
       + " AND (? IS NULL OR UPPER(o.first_name ||' '|| o.last_name) like UPPER('%'||COALESCE(?, '')||'%'))";
   private static final String SQL_SELECT_SEARCH_LIMIT_CLAUSE = " LIMIT ?";
