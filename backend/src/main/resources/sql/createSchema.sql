@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS horse
   CHECK (mother_id <> father_id),
   CHECK (id <> father_id),
   CHECK (id <> mother_id),
-  CHECK (date_of_birth < NOW())
+  CHECK (date_of_birth <= NOW())
 );
