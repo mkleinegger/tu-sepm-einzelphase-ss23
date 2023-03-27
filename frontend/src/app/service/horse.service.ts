@@ -65,9 +65,9 @@ export class HorseService {
     id: number | undefined,
     limit: number
   ): Observable<HorseTree> {
-    const params = new HttpParams().set('limit', limit);
+    const params = new HttpParams().set('numberOfGenerations', limit);
 
-    return this.http.get<HorseTree>(`${baseUri}/${id}/generations`, { params });
+    return this.http.get<HorseTree>(`${baseUri}/${id}/familytree`, { params });
   }
 
   /**

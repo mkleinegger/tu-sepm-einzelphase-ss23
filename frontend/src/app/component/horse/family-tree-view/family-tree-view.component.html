@@ -1,0 +1,37 @@
+<h1 class="display-1">Family Tree</h1>
+
+<div class="d-flex flex-row col-lg-6 col-md-8 mb-3">
+  <div>
+    <button
+      type="button"
+      class="btn btn-primary "
+      style="width: 100px"
+      (click)="reloadFamilyTree()"
+      [disabled]="limitModel.invalid"
+    >
+      <i class="bi bi-arrow-counterclockwise"></i>
+      Load
+    </button>
+  </div>
+  <div>
+    <input
+      type="number"
+      id="limit"
+      name="limit"
+      placeholder="Number of generations"
+      class="form-control ms-2"
+      [(ngModel)]="limitOfGenerations"
+      [class]="dynamicCssClassesForInput(limitModel)"
+      #limitModel="ngModel"
+      min="1"
+    />
+    <div *ngIf="limitModel.invalid" class="invalid-feedback">
+      You need atleast 1 generation
+    </div>
+  </div>
+</div>
+<app-family-tree-node 
+    *ngIf="horseTree$ | async as horseTree" 
+    [horseTree]="horseTree" 
+    (deleteEvent)="deleteHorse($event)"/>
+

@@ -106,7 +106,7 @@
           <div class="btn-group">
             <a
               class="btn btn-sm responsive-info-button"
-              [routerLink]="['detail', horse.id]"
+              [routerLink]="[horse.id, 'detail']"
               aria-label="Show horse details"
             >
               <i class="bi bi-info-lg"></i>
@@ -114,8 +114,8 @@
             <a
               class="btn btn-sm responsive-tree-button"
               aria-label="Generations of Horse"
-              [routerLink]="['generations', horse.id]"
-              [queryParams]="{ limitOfGenerations: 3 }"
+              [routerLink]="[horse.id, 'familytree']"
+              [queryParams]="{ generations: 3 }"
             >
               <i class="bi bi-list-nested"></i>
             </a>
@@ -128,7 +128,7 @@
             </a>
             <a
               class="btn btn-sm responsive-warning-button"
-              [routerLink]="['edit', horse.id]"
+              [routerLink]="[horse.id, 'edit']"
               aria-label="Edit horse"
             >
               <i class="bi bi-pencil"></i>

@@ -1,0 +1,62 @@
+<div class="mt-0" *ngIf="horseTree">
+  <table class="table table-hover border m-0">
+    <tbody>
+      <tr class="center-td">
+        <td style="width: 5%">
+          <button
+            type="button"
+            class="btn btn-secondary-outlined"
+            (click)="collapse()">
+            <span *ngIf="horseTree.mother || horseTree.father">
+              <i *ngIf="isCollapsed" class="bi bi-chevron-down"></i>
+              <i *ngIf="!isCollapsed" class="bi bi-chevron-up"></i>
+            </span>
+            <i *ngIf="!horseTree.mother && !horseTree.father" class="bi bi-chevron-right"></i> 
+          </button>
+        </td>
+        <td style="width: 75%">
+          {{ formatHorseName(horseTree, 80) }}
+          <i *ngIf="horseTree.sex === 'MALE'" class="bi bi-gender-male"></i>
+          <i *ngIf="horseTree.sex === 'FEMALE'" class="bi bi-gender-female"></i>
+        </td>
+        <td class="text-end" style="width: 20%">
+          {{ horseTree.dateOfBirth | date : 'dd.MM.yyyy' }}
+          <div class="btn-group ms-2">
+            <a
+              class="btn btn-sm responsive-info-button"
+              [routerLink]="['/horses', horseTree.id, 'detail']"
+
+              aria-label="Show horse details"
+            >
+              <i class="bi bi-info-lg"></i>
+            </a>
+            <a
+              class="btn btn-sm responsive-danger-button"
+              aria-label="Delete horse"
+              (click)="deleteEvent.emit(horseTree)"
+            >
+              <i class="bi bi-trash"></i>
+            </a>
+            <a
+              class="btn btn-sm responsive-warning-button"
+              [routerLink]="['/horses', horseTree.id, 'edit']"
+              aria-label="Edit horse"
+            >
+              <i class="bi bi-pencil"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="!isCollapsed" class="ms-4">
+    <app-family-tree-node 
+      *ngIf="horseTree.mother" 
+      [horseTree]="horseTree.mother" 
+      (deleteEvent)="deleteEvent.emit($event)"/>
+    <app-family-tree-node 
+      *ngIf="horseTree.father" 
+      [horseTree]="horseTree.father"
+      (deleteEvent)="deleteEvent.emit($event)"/>
+  </div>
+</div>
