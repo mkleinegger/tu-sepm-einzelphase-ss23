@@ -25,7 +25,7 @@
       name="searchHorseName"
       class="form-control"
       [(ngModel)]="horseSearch.name"
-      (ngModelChange)="this.updateQueue.next($event)"
+      (input)="this.updateQueue.next($event)"
     />
   </div>
   <div class="flex-grow-2 ms-1 col-4">
@@ -37,7 +37,7 @@
       name="searchHorseDescription"
       class="form-control"
       [(ngModel)]="horseSearch.description"
-      (ngModelChange)="this.updateQueue.next($event)"
+      (input)="this.updateQueue.next($event)"
     />
   </div>
   <div class="ms-1">
