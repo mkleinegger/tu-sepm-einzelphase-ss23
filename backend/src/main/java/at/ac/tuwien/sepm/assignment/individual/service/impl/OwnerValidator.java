@@ -59,7 +59,7 @@ public class OwnerValidator {
       throw new ValidationException("Validation of owner for create failed", validationErrors);
     }
 
-    if (ownerDao.search(new OwnerSearchDto(null, null)).stream().anyMatch(h -> h.getEmail().equals(newOwner.email()))) {
+    if (newOwner.email() != null && ownerDao.search(new OwnerSearchDto(null, null)).stream().anyMatch(h -> newOwner.email().equals(h.getEmail()))) {
       List<String> conflictErrors = new ArrayList<>();
       conflictErrors.add("Owner's email is already existing!");
       throw new ConflictException("Validation of owner for create failed", conflictErrors);
