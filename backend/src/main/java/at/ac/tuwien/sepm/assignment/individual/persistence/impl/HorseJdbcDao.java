@@ -46,8 +46,9 @@ public class HorseJdbcDao implements HorseDao {
   private static final String SQL_SELECT_SEARCH_LIMIT_CLAUSE = " LIMIT ?";
   private static final String SQL_SELECT_GENERATION =
       "WITH RECURSIVE ancestor(id, name, description, date_of_birth, sex, owner_id, mother_id, father_id, generation) AS ("
-          + " SELECT *, 1 as generation FROM horse where Id = ? UNION ALL SELECT horse.*, (ancestor.generation + 1) FROM horse, ancestor"
-          + " WHERE (ancestor.mother_id = horse.id OR ancestor.father_id = horse.id) AND ancestor.generation < ?) SELECT * FROM ancestor";
+          + " SELECT *, 1 as generation FROM horse where Id = ? UNION SELECT horse.*, (ancestor.generation + 1) FROM horse, ancestor"
+          + " WHERE (ancestor.mother_id = horse.id OR ancestor.father_id = horse.id) AND ancestor.generation < ?)"
+          + " SELECT * FROM ancestor";
 
   private static final String SQL_SELECT_BY_ID = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
   private static final String SQL_CREATE =
@@ -212,7 +213,7 @@ public class HorseJdbcDao implements HorseDao {
       throw new NotFoundException("Could not return family-tree for horse with ID %d, because it does not exist".formatted(id));
     }
 
-    return horses.stream().collect(Collectors.toMap(Horse::getId, Function.identity()));
+    return horses.stream().distinct().collect(Collectors.toMap(Horse::getId, Function.identity()));
   }
 
   @Override

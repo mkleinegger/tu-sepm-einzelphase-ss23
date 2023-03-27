@@ -3,6 +3,7 @@ package at.ac.tuwien.sepm.assignment.individual.entity;
 import at.ac.tuwien.sepm.assignment.individual.type.Sex;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Represents a horse in the persistent data store.
@@ -103,5 +104,24 @@ public class Horse {
         + ", motherId=" + motherId
         + ", fatherId=" + fatherId
         + '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Horse horse = (Horse) o;
+    return id.equals(horse.id) && name.equals(horse.name) && Objects.equals(description, horse.description) && dateOfBirth.equals(horse.dateOfBirth)
+        && sex == horse.sex && Objects.equals(ownerId, horse.ownerId) && Objects.equals(motherId, horse.motherId)
+        && Objects.equals(fatherId, horse.fatherId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, name, description, dateOfBirth, sex, ownerId, motherId, fatherId);
   }
 }

@@ -139,6 +139,10 @@ public class HorseValidator {
 
     if (dateOfBirth == null) {
       errors.add("Horse needs a date of birth");
+    } else {
+      if (dateOfBirth.isAfter(LocalDate.now())) {
+        errors.add("Horse cannot be born in the future");
+      }
     }
   }
 

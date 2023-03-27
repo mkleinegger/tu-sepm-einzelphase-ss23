@@ -78,15 +78,16 @@ public class HorseMapper {
    * The given map of horses needs to be initialized and if existing the mother/father of
    * {@code horse}. The {@code generation} must be greater than 0.
    *
-   * @param horse      the horse to convert
-   * @param horses     a map of horse parents by their id, which needs to contain the parents referenced by {@code horse}
-   * @param generation the current generation of the horse in this tree
+   * @param horse         the horse to convert
+   * @param horses        a map of horse parents by their id, which needs to contain the parents referenced by {@code horse}
+   * @param generation    the current generation of the horse in this tree
+   * @param maxGeneration the maximal generation which should be loaded, to avoid loading more than necessary (two generation have same ancestor)
    * @return the converted {@link HorseTreeDto}
    */
-  public HorseTreeDto entityToTreeDto(Horse horse, Map<Long, Horse> horses, int generation) {
+  public HorseTreeDto entityToTreeDto(Horse horse, Map<Long, Horse> horses, int generation, int maxGeneration) {
     LOG.trace("entityToTreeDto({})", horses);
 
-    if (horse == null) {
+    if (horse == null || generation > maxGeneration) {
       return null;
     }
 
@@ -99,9 +100,8 @@ public class HorseMapper {
         horse.getName(),
         horse.getDateOfBirth(),
         horse.getSex(),
-        generation,
-        entityToTreeDto(horses.get(horse.getMotherId()), horses, generation + 1),
-        entityToTreeDto(horses.get(horse.getFatherId()), horses, generation + 1)
+        entityToTreeDto(horses.get(horse.getMotherId()), horses, generation + 1, maxGeneration),
+        entityToTreeDto(horses.get(horse.getFatherId()), horses, generation + 1, maxGeneration)
     );
   }
 

@@ -117,10 +117,12 @@ public class HorseServiceImpl implements HorseService {
 
     var horse = dao.getById(id);  // to check if horse even existing
     var horses = dao.getGenerationsAsTree(horse.getId(), numberOfGenerations);
-    return mapper.entityToTreeDto(horses.get(horse.getId()), horses, 1);
+    return mapper.entityToTreeDto(horses.get(horse.getId()), horses, 1, numberOfGenerations);
   }
 
   private Map<Long, OwnerDto> ownerMapForSingleId(Long ownerId) {
+    LOG.trace("ownerMapForSingleId({})", ownerId);
+
     try {
       return ownerId == null ? null : Collections.singletonMap(ownerId, ownerService.getById(ownerId));
     } catch (NotFoundException e) {
@@ -129,6 +131,8 @@ public class HorseServiceImpl implements HorseService {
   }
 
   private Map<Long, HorseDetailDto> horseMapForIds(Collection<Long> ids) {
+    LOG.trace("horseMapForIds({})", ids);
+
     try {
       HashMap<Long, HorseDetailDto> result = new HashMap<>();
       for (Long id : ids) {
