@@ -1,6 +1,6 @@
 # Read me
 
-This repository contains all solved exercise solutions for the TU Wien course [183.241 Software Engineering and Project Management (2023SS)](https://tiss.tuwien.ac.at/course/educationDetails.xhtml?dswid=1107&dsrid=680&semester=2023S&courseNr=183241).
+This repository contains the solution to the first phase of the TU Wien course [183.241 Software Engineering and Project Management (2023SS)](https://tiss.tuwien.ac.at/course/educationDetails.xhtml?dswid=1107&dsrid=680&semester=2023S&courseNr=183241).
 
 ## Grading
 
